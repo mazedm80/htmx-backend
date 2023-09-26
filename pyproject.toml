@@ -1,0 +1,36 @@
+[tool.isort]
+profile = "black"
+src_paths = ["app", "tests"]
+skip_gitignore = true
+skip_glob = ["*pb2.py"]
+
+[tool.black]
+line-length = 88
+target-version = ['py36', 'py37', 'py38']
+include = '\.pyi?$'
+
+[tool.poetry]
+name = "py-htmx"
+version = "0.0.1"
+description = "test project for fastapi and htmx"
+authors = ["Mir Mazedur Rahaman <mir.rahaman@bareways.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic-settings = "^2.0.3"
+pydantic = "^2.3.0"
+black = "^23.9.1"
+isort = "^5.12.0"
+python-jose = "^3.3.0"
+passlib = "^1.7.4"
+python-multipart = "^0.0.6"
+
+[tool.poetry.group.dev.dependencies]
+fastapi = "^0.103.1"
+uvicorn = "^0.23.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
