@@ -1,16 +1,17 @@
-from core.auth.models import Token
+from api.auth.schemas import Token, TokenData
 from core.auth.services import create_access_token
-from core.database.services.user import verify_user
-from fastapi import HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 
 async def get_access_token(username: str, password: str) -> Token:
     """Get access token"""
 
-    if not await verify_user(username, password):
+    if username != "user" or password != "password":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     access_token = create_access_token(data={"sub": username})
