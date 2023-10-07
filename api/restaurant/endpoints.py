@@ -15,4 +15,10 @@ async def get_restaurant(
         PermissionChecker(Permission(groups=[AuthGroup.SUPER_ADMIN, AuthGroup.ADMIN]))
     ),
 ):
-    return {"restaurant": "restaurant"}
+    if authorize:
+        return {"restaurant": "restaurant"}
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="You don't have permission to access",
+        headers={"WWW-Authenticate": "Bearer"},
+    )

@@ -12,18 +12,21 @@ async def verify_user(email: str, password: str) -> bool:
         print("Error while executing query")
     user = query.fetchone()[0]
     if user:
-        print(f"username: {user.email}, password: {user.password}")
         return user.password == password
     return False
 
 
 async def get_user_permission(email: str) -> TokenData:
-    statement = select(UserPermission).where(UserPermission.email == email)
+    user_id = (select(User.id).where(User.email == email)).cte("user_id")
+
+    statement = select(UserPermission.permission_id).join(
+        user_id, user_id.c.id == UserPermission.user_id
+    )
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
         print("Error while executing query")
-    user = query.fetchone()[0]
+    user = query.fetchone()
     if user:
-        return TokenData(email=user.email, auth_group=user.group_id)
+        return TokenData(email=email, auth_group=user.permission_id)
     return None

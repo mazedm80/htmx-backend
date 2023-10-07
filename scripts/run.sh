@@ -2,6 +2,7 @@
 
 export API__PORT=8000
 export API__DEBUG=True
+export API__SECRET_KEY=""
 
 export PSQL__HOST="mirserver"
 export PSQL__PORT=5432

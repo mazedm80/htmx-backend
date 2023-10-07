@@ -9,9 +9,10 @@ class AuthGroup(int, Enum):
 
     SUPER_ADMIN = 1
     ADMIN = 2
-    OWNERS = 3
-    MANAGERS = 4
-    USERS = 5
+    OWNER = 3
+    MANAGER = 4
+    STAFF = 5
+    CUSTOMER = 6
 
 
 class Permission(BaseModel):

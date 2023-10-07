@@ -8,12 +8,13 @@ class User(Base):
     __table_args__ = {"schema": "public"}
     __tablename__ = "users"
 
-    email = Column(TEXT, unique=True, nullable=False, primary_key=True)
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    email = Column(TEXT, unique=True, nullable=False)
     name = Column(TEXT, nullable=False)
     password = Column(TEXT, nullable=False)
     is_active = Column(BOOLEAN, default=True)
-    # created_at = Column(DateTime, nullable=False)
-    # updated_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
 
 
 class AuthGroup(Base):
@@ -33,12 +34,12 @@ class UserPermission(Base):
     __tablename__ = "user_permissions"
 
     id = Column(INTEGER, primary_key=True, autoincrement=True)
-    email = Column(
-        TEXT, ForeignKey("public.users.email", ondelete="CASCADE"), nullable=False
+    user_id = Column(
+        INTEGER, ForeignKey("public.users.id", ondelete="CASCADE"), nullable=False
     )
-    group_id = Column(
+    permission_id = Column(
         INTEGER,
         ForeignKey("public.auth_group.id", ondelete="CASCADE"),
         nullable=False,
-        default=5,
+        default=6,
     )
