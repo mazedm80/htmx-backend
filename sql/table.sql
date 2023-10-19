@@ -60,3 +60,16 @@ CREATE TABLE IF NOT EXISTS public.restaurant_access
     updated_at timestamp with time zone DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS restaurant_access_user_id_idx ON public.restaurant_access USING btree (user_id);
+
+-- Restaurant table
+DROP TABLE IF EXISTS public.restaurant_tables;
+CREATE TABLE IF NOT EXISTS public.restaurant_tables
+(
+    id SERIAL NOT NULL,
+    restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
+    table_number integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    PRIMARY KEY (restaurant_id, table_number)
+);
+CREATE INDEX IF NOT EXISTS restaurant_tables_restaurant_id_idx ON public.restaurant_tables USING btree (restaurant_id);

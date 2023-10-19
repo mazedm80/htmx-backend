@@ -1,6 +1,6 @@
 from core.auth.models import Token
 from core.auth.services import create_access_token
-from core.database.services.user import verify_user
+from core.database.services.users import verify_user
 from fastapi import HTTPException, status
 
 

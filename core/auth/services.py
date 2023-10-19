@@ -1,7 +1,7 @@
-from typing import Annotated
+from typing import Annotated, Tuple
 
 from core.auth.models import Permission, Token
-from core.database.services.user import get_user_permission
+from core.database.services.users import get_user_permission
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -52,7 +52,9 @@ class PermissionChecker:
     def __init__(self, permission: Permission) -> None:
         self.permission = permission
 
-    async def __call__(self, email: str = Depends(get_current_user)) -> bool:
+    async def __call__(
+        self, email: str = Depends(get_current_user)
+    ) -> Tuple[bool, str]:
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -63,4 +65,4 @@ class PermissionChecker:
             raise credentials_exception
         if token_data.auth_group not in self.permission.groups:
             raise credentials_exception
-        return True
+        return True, email

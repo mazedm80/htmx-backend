@@ -1,6 +1,6 @@
 from core.auth.models import TokenData
 from core.database import PSQLHandler
-from core.database.orm.user import User, UserPermission
+from core.database.orm.users import User, UserPermission
 from sqlalchemy import select
 
 

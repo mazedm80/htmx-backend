@@ -1,13 +1,26 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from config.settings import settings
 from sqlalchemy.engine.result import Result
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from config.settings import settings
 
-class PSQLHandler:
+
+class SingletonMeta(type):
+    """Metaclass to provide a singleton"""
+
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+
+
+class PSQLHandler(metaclass=SingletonMeta):
     def __init__(self) -> None:
         """Initialize asynchronous SQLAlchemy Engine using asyncpg driver."""
         self.configuration = settings.psql
@@ -35,4 +48,17 @@ class PSQLHandler:
         """Execute an SQL statement against the database and return the result."""
         async with self.async_session() as session:
             result = await session.execute(statement, *args, **kwargs)
+            return result
+
+    async def execute_commit(self, statement, *args, **kwargs) -> Result:
+        """Execute an SQL statement against the database and commit the result."""
+        async with self.async_session() as session:
+            result = await session.execute(statement, *args, **kwargs)
+            await session.commit()
+            return result
+
+    async def scalars(self, statement, *args, **kwargs) -> Result:
+        """Execute an SQL statement against the database and return the ORM object."""
+        async with self.async_session() as session:
+            result = await session.scalars(statement, *args, **kwargs)
             return result

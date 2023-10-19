@@ -1,5 +1,5 @@
 from core.database import Base
-from sqlalchemy import BOOLEAN, INTEGER, TEXT, Column, DateTime, ForeignKey
+from sqlalchemy import BOOLEAN, INTEGER, TEXT, Column, DateTime, ForeignKey, func
 
 
 class User(Base):
@@ -13,8 +13,8 @@ class User(Base):
     name = Column(TEXT, nullable=False)
     password = Column(TEXT, nullable=False)
     is_active = Column(BOOLEAN, default=True)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now())
 
 
 class AuthGroup(Base):
@@ -43,3 +43,5 @@ class UserPermission(Base):
         nullable=False,
         default=6,
     )
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now())
