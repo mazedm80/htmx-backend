@@ -26,7 +26,9 @@ CREATE TABLE IF NOT EXISTS public.user_permissions
 (
     id SERIAL NOT NULL PRIMARY KEY,
     user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    permission_id integer NOT NULL REFERENCES public.auth_group(id) ON DELETE CASCADE
+    permission_id integer NOT NULL REFERENCES public.auth_group(id) ON DELETE CASCADE,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS user_permissions_user_id_idx ON public.user_permissions USING btree (user_id);
 
@@ -35,9 +37,26 @@ DROP TABLE IF EXISTS public.restaurants;
 CREATE TABLE IF NOT EXISTS public.restaurants
 (
     id SERIAL NOT NULL PRIMARY KEY,
+    owner_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     name text NOT NULL,
     address text NOT NULL,
     phone text NOT NULL,
+    email text NOT NULL,
+    website text NOT NULL,
+    image text NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS restaurants_name_idx ON public.restaurants USING btree (name);
+
+-- Restaurant access Table
+DROP TABLE IF EXISTS public.restaurant_access;
+CREATE TABLE IF NOT EXISTS public.restaurant_access
+(
+    id SERIAL NOT NULL PRIMARY KEY,
+    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS restaurant_access_user_id_idx ON public.restaurant_access USING btree (user_id);

@@ -28,6 +28,7 @@ passlib = "^1.7.4"
 python-multipart = "^0.0.6"
 sqlalchemy = "^2"
 asyncpg = "^0.28"
+geoalchemy2 = "^0.14.1"
 
 [tool.poetry.group.dev.dependencies]
 fastapi = "^0.103.1"
