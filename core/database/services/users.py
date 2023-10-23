@@ -1,7 +1,8 @@
+from sqlalchemy import select
+
 from core.auth.models import TokenData
 from core.database import PSQLHandler
 from core.database.orm.users import User, UserPermission
-from sqlalchemy import select
 
 
 async def verify_user(email: str, password: str) -> bool:
@@ -19,7 +20,7 @@ async def verify_user(email: str, password: str) -> bool:
 async def get_user_permission(email: str) -> TokenData:
     user_id = (select(User.id).where(User.email == email)).cte("user_id")
 
-    statement = select(UserPermission.permission_id).join(
+    statement = select(UserPermission.permission_id, UserPermission.user_id).join(
         user_id, user_id.c.id == UserPermission.user_id
     )
     try:
@@ -28,5 +29,7 @@ async def get_user_permission(email: str) -> TokenData:
         print("Error while executing query")
     user = query.fetchone()
     if user:
-        return TokenData(email=email, auth_group=user.permission_id)
+        return TokenData(
+            email=email, user_id=user.user_id, auth_group=user.permission_id
+        )
     return None

@@ -1,13 +1,11 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
 from api.restaurant.schemas import Restaurant, RestaurantsList
 from core.database.services.restaurants import get_all_restaurants, insert_restaurant
 
 
-async def get_restaurant() -> List[Restaurant]:
-    restaurants = await get_all_restaurants()
+async def get_restaurant(email: str) -> List[Restaurant]:
+    restaurants = await get_all_restaurants(email=email)
     restaurants_list = []
     for restaurant in restaurants:
         restaurants_list.append(

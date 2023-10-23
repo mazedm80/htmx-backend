@@ -1,7 +1,8 @@
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
+
 from api.app import app
 from config.settings import settings
-from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,

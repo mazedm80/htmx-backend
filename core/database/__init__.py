@@ -1,5 +1,6 @@
-from core.database.postgres import PSQLHandler
 from sqlalchemy.orm import DeclarativeBase
+
+from core.database.postgres import PSQLHandler
 
 
 class Base(DeclarativeBase):

@@ -3,13 +3,30 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
 from api.restaurant.schemas import Restaurant
+from core.auth.models import AuthGroup
 from core.database import PSQLHandler
-from core.database.orm.restaurants import RestaurantTB, RestaurantAccessTB
+from core.database.orm.restaurants import RestaurantAccessTB, RestaurantTB
 from core.database.orm.users import User
+from core.database.services.users import get_user_permission
 
 
-async def get_all_restaurants():
-    statement = select(RestaurantTB)
+async def get_all_restaurants(email: str):
+    permission_id = await get_user_permission(email=email)
+    if (
+        permission_id.auth_group == AuthGroup.SUPER_ADMIN
+        or permission_id.auth_group == AuthGroup.ADMIN
+    ):
+        statement = select(RestaurantTB)
+    else:
+        statement = (
+            select(RestaurantTB)
+            .join(
+                RestaurantAccessTB,
+                RestaurantAccessTB.restaurant_id == RestaurantTB.id,
+            )
+            .where(RestaurantAccessTB.user_id == permission_id.user_id)
+        )
+        print(statement.compile(compile_kwargs={"literal_binds": True}))
     try:
         query = await PSQLHandler().scalars(statement=statement)
     except Exception:

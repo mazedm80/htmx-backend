@@ -1,6 +1,6 @@
 [tool.isort]
 profile = "black"
-src_paths = ["app", "tests"]
+src_paths = ["api", "config", "core", "tests"]
 skip_gitignore = true
 skip_glob = ["*pb2.py"]
 

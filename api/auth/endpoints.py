@@ -1,7 +1,8 @@
-from api.auth.services import get_access_token
-from core.auth.models import Token
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+
+from api.auth.services import get_access_token
+from core.auth.models import Token
 
 router = APIRouter(
     prefix="/auth",

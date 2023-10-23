@@ -1,5 +1,6 @@
-from core.database import Base
 from sqlalchemy import BOOLEAN, INTEGER, TEXT, Column, DateTime, ForeignKey, func
+
+from core.database import Base
 
 
 class User(Base):
