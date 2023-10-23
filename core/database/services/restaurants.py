@@ -1,21 +1,36 @@
-from fastapi import HTTPException, status
-from sqlalchemy import select
+from typing import List, Optional
+
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from api.restaurant.schemas import Restaurant
-from core.auth.models import AuthGroup
+from core.base.error import (
+    DatabaseInsertException,
+    DatabaseQueryException,
+    UnauthorizedException,
+)
 from core.database import PSQLHandler
 from core.database.orm.restaurants import RestaurantAccessTB, RestaurantTB
-from core.database.orm.users import User
-from core.database.services.users import get_user_permission
 
 
-async def get_all_restaurants(email: str):
-    permission_id = await get_user_permission(email=email)
-    if (
-        permission_id.auth_group == AuthGroup.SUPER_ADMIN
-        or permission_id.auth_group == AuthGroup.ADMIN
-    ):
+async def get_access_permissions(user_id: int, restaurant_id: int) -> bool:
+    statement = (
+        select(RestaurantAccessTB.id)
+        .where(RestaurantAccessTB.user_id == user_id)
+        .where(RestaurantAccessTB.restaurant_id == restaurant_id)
+    )
+    try:
+        query = await PSQLHandler().execute(statement=statement)
+    except Exception:
+        raise DatabaseQueryException
+    restaurant_access = query.scalar()
+    if restaurant_access is None:
+        return False
+    return True
+
+
+async def get_all_restaurants(user_id: Optional[int] = None) -> List[Restaurant]:
+    if user_id is None:
         statement = select(RestaurantTB)
     else:
         statement = (
@@ -24,23 +39,31 @@ async def get_all_restaurants(email: str):
                 RestaurantAccessTB,
                 RestaurantAccessTB.restaurant_id == RestaurantTB.id,
             )
-            .where(RestaurantAccessTB.user_id == permission_id.user_id)
+            .where(RestaurantAccessTB.user_id == user_id)
         )
-        print(statement.compile(compile_kwargs={"literal_binds": True}))
     try:
-        query = await PSQLHandler().scalars(statement=statement)
+        query = await PSQLHandler().execute(statement=statement)
     except Exception:
-        print("Error while executing query")
-    restaurants = query.fetchall()
-    return restaurants
+        raise DatabaseQueryException
+    restaurants = query.scalars()
+    restaurants_list = []
+    for restaurant in restaurants:
+        restaurants_list.append(
+            Restaurant(
+                id=restaurant.id,
+                name=restaurant.name,
+                address=restaurant.address,
+                phone=restaurant.phone,
+                email=restaurant.email,
+                website=restaurant.website,
+                image=restaurant.image,
+            )
+        )
+    return restaurants_list
 
 
-async def insert_restaurant(restaurant: Restaurant, email: str) -> None:
-    owner_id = select(User.id).where(User.email == email)
-    query = await PSQLHandler().execute(statement=owner_id)
-    owner_id = query.fetchone()[0]
+async def insert_restaurant(restaurant: Restaurant, user_id: int) -> None:
     statement = insert(RestaurantTB).values(
-        owner_id=owner_id,
         name=restaurant.name,
         address=restaurant.address,
         phone=restaurant.phone,
@@ -49,10 +72,72 @@ async def insert_restaurant(restaurant: Restaurant, email: str) -> None:
         image=restaurant.image,
     )
     try:
+        response = await PSQLHandler().execute_commit(statement=statement)
+    except Exception:
+        raise DatabaseInsertException
+    if response is None:
+        raise DatabaseInsertException
+    statement = insert(RestaurantAccessTB).values(
+        user_id=user_id, restaurant_id=response.inserted_primary_key[0]
+    )
+    try:
+        response = await PSQLHandler().execute_commit(statement=statement)
+    except Exception:
+        raise DatabaseInsertException
+
+
+async def update_restaurant_by_id(
+    restaurant: Restaurant, restaurant_id: int, user_id: int
+) -> Restaurant:
+    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+        raise UnauthorizedException
+    statement = (
+        update(RestaurantTB)
+        .where(RestaurantTB.id == restaurant_id)
+        .values(
+            name=restaurant.name,
+            address=restaurant.address,
+            phone=restaurant.phone,
+            email=restaurant.email,
+            website=restaurant.website,
+            image=restaurant.image,
+        )
+    )
+    try:
+        response = await PSQLHandler().execute_commit(statement=statement)
+    except Exception:
+        raise DatabaseInsertException
+    if response is None:
+        raise DatabaseInsertException
+    statement = select(RestaurantTB).where(RestaurantTB.id == restaurant_id)
+    try:
+        query = await PSQLHandler().execute(statement=statement)
+    except Exception:
+        raise DatabaseQueryException
+    restaurant = query.scalar()
+    if restaurant is None:
+        raise DatabaseQueryException
+
+    return Restaurant(
+        id=restaurant.id,
+        name=restaurant.name,
+        address=restaurant.address,
+        phone=restaurant.phone,
+        email=restaurant.email,
+        website=restaurant.website,
+        image=restaurant.image,
+    )
+
+
+async def delete_restaurant_by_id(restaurant_id: int, user_id: int) -> None:
+    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+        raise UnauthorizedException
+    statement = (
+        delete(RestaurantTB)
+        .where(RestaurantTB.id == restaurant_id)
+        .returning(RestaurantTB.id)
+    )
+    try:
         await PSQLHandler().execute_commit(statement=statement)
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Error while creating restaurant",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise DatabaseInsertException

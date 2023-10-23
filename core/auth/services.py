@@ -1,11 +1,12 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from core.auth.models import Permission, Token, TokenData
+from core.base.error import UnauthorizedException, ValidationException
 from core.database.services.users import get_user_permission
 
 SECRET_KEY = "19436de93dbb87f401018768c42104e6f1a8e7b585f660e74630b8424a6cfbe2"
@@ -34,18 +35,13 @@ def create_access_token(data: dict) -> Annotated[str, "Create access token"]:
 
 
 async def get_current_user(token: Token = Depends(oauth2_scheme)) -> str:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
-            raise credentials_exception
+            raise UnauthorizedException
     except JWTError:
-        raise credentials_exception
+        raise ValidationException
     return email
 
 
@@ -54,14 +50,9 @@ class PermissionChecker:
         self.permission = permission
 
     async def __call__(self, email: str = Depends(get_current_user)) -> TokenData:
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
         token_data = await get_user_permission(email=email)
         if token_data is None:
-            raise credentials_exception
+            raise ValidationException
         if token_data.auth_group not in self.permission.groups:
-            raise credentials_exception
+            raise UnauthorizedException
         return token_data

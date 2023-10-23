@@ -31,6 +31,5 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     """Token data schema."""
 
-    email: str = Field(description="Email address of the user.")
     user_id: int = Field(description="User id of the user.")
     auth_group: AuthGroup = Field(description="Auth group of the user.")

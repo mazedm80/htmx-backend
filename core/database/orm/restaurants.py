@@ -10,9 +10,6 @@ class RestaurantTB(Base):
     __tablename__ = "restaurants"
 
     id = Column(INTEGER, primary_key=True, autoincrement=True)
-    owner_id = Column(
-        INTEGER, ForeignKey("public.users.id", ondelete="CASCADE"), nullable=False
-    )
     name = Column(TEXT, nullable=False)
     address = Column(TEXT, nullable=False)
     phone = Column(TEXT, nullable=False)

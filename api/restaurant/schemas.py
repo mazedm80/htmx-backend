@@ -1,9 +1,15 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
 
 class Restaurant(BaseModel):
+    """Restaurant model"""
+
+    id: int = Field(
+        description="Id of the restaurant. It is not required for creation.",
+        default=None,
+    )
     name: str = Field(
         description="Name of the restaurant. It must be between 3 and 50 characters.",
         min_length=3,
