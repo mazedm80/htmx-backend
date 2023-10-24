@@ -74,3 +74,34 @@ CREATE TABLE IF NOT EXISTS public.restaurant_tables
     PRIMARY KEY (restaurant_id, table_number)
 );
 CREATE INDEX IF NOT EXISTS restaurant_tables_restaurant_id_idx ON public.restaurant_tables USING btree (restaurant_id);
+
+-- Menu categories table
+DROP TABLE IF EXISTS public.menu_categories;
+CREATE TABLE IF NOT EXISTS public.menu_categories
+(
+    id SERIAL NOT NULL PRIMARY KEY,
+    restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS menu_categories_restaurant_id_idx ON public.menu_categories USING btree (restaurant_id);
+
+-- Menu items table
+DROP TABLE IF EXISTS public.menu_items;
+CREATE TABLE IF NOT EXISTS public.menu_items
+(
+    id SERIAL NOT NULL PRIMARY KEY,
+    restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
+    menu_category_id integer NOT NULL REFERENCES public.menu_categories(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    description text NOT NULL,
+    price numeric NOT NULL,
+    vegetarian boolean,
+    vegan boolean,
+    gluten_free boolean,
+    spicy boolean,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS menu_items_restaurant_id_idx ON public.menu_items USING btree (restaurant_id);
