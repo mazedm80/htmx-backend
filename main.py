@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 

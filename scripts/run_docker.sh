@@ -1,7 +1,6 @@
 #!/bin/bash
-docker stop pyhtmx-api && docker rm pyhtmx-api
 docker run \
-  --name pyhtmx-api \
+  --name pyhtmx \
   --restart always \
   -p 8000:80 \
   -e MAX_WORKERS=2 \
@@ -10,4 +9,4 @@ docker run \
   -e PSQL__USER="htmx" \
   -e PSQL__PASSWORD="htmx123" \
   -e PSQL__DATABASE="pyhtmx" \
-  -d pyhtmx-api:latest
+	-d pyhtmx:latest
