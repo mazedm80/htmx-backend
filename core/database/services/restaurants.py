@@ -9,12 +9,12 @@ from core.base.error import (
     DatabaseQueryException,
     UnauthorizedException,
 )
-from core.database import PSQLHandler
 from core.database.orm.restaurants import (
     RestaurantAccessTB,
-    RestaurantTB,
     RestaurantTableTB,
+    RestaurantTB,
 )
+from core.database.postgres import PSQLHandler
 
 
 async def get_access_permissions(user_id: int, restaurant_id: int) -> bool:
@@ -86,9 +86,10 @@ async def insert_restaurant(restaurant: Restaurant, user_id: int) -> None:
         user_id=user_id, restaurant_id=response.inserted_primary_key[0]
     )
     try:
-        response = await PSQLHandler().execute_commit(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
         raise DatabaseInsertException
+    return None
 
 
 async def update_restaurant_by_id(
@@ -146,6 +147,7 @@ async def delete_restaurant_by_id(restaurant_id: int, user_id: int) -> None:
         await PSQLHandler().execute_commit(statement=statement)
     except Exception:
         raise DatabaseInsertException
+    return None
 
 
 # Table
@@ -181,6 +183,7 @@ async def insert_table_by_id(table: Table, restaurant_id: int, user_id: int) -> 
         await PSQLHandler().execute_commit(statement=statement)
     except Exception:
         raise DatabaseInsertException
+    return None
 
 
 async def update_table_by_id(table: Table, restaurant_id: int, user_id: int) -> Table:
@@ -214,3 +217,4 @@ async def delete_table_by_id(
         await PSQLHandler().execute_commit(statement=statement)
     except Exception:
         raise DatabaseInsertException
+    return None

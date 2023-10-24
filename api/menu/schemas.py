@@ -3,53 +3,60 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
-class Restaurant(BaseModel):
-    """Restaurant model"""
+class MenuCategory(BaseModel):
+    """Menu Category model."""
 
-    id: int = Field(
-        description="Id of the restaurant. It is not required for creation.",
-        default=None,
+    id: Optional[int] = Field(
+        description="Menu Category ID. It is not required for creation.",
+    )
+    restaurant_id: int = Field(
+        description="Restaurant ID",
     )
     name: str = Field(
-        description="Name of the restaurant. It must be between 3 and 50 characters.",
-        min_length=3,
-        max_length=50,
-    )
-    address: str = Field(
-        description="Address of the restaurant. It must be between 3 and 50 characters.",
-        min_length=3,
-        max_length=50,
-    )
-    phone: str = Field(
-        description="Phone of the restaurant. It must be between 3 and 50 characters.",
-        min_length=3,
-        max_length=50,
-    )
-    email: str = Field(
-        description="Email of the restaurant. It must be between 3 and 50 characters.",
-        min_length=3,
-        max_length=50,
-    )
-    website: str = Field(
-        description="Website of the restaurant. It must be between 3 and 50 characters.",
-        min_length=3,
-        max_length=50,
-    )
-    image: str = Field(
-        description="Image of the restaurant. It must be between 3 and 50 characters.",
-        min_length=3,
-        max_length=50,
+        description="Name of the menu categor", min_length=3, max_length=50
     )
 
 
-class RestaurantsList(BaseModel):
-    """RestaurantsList model"""
+class MenuCategoryList(BaseModel):
+    """Menu Category List model."""
 
-    restaurants: List[Restaurant]
+    menu_categories: List[MenuCategory]
 
 
-class RestaurantAccess(BaseModel):
-    """RestaurantAccess model"""
+class MenuItem(BaseModel):
+    """Menu Item model."""
 
-    user_id: int
-    restaurant_id: int
+    id: Optional[int] = Field(
+        description="Menu Item ID. It is not required for creation.",
+    )
+    restaurant_id: int = Field(
+        description="Restaurant ID",
+    )
+    menu_category_id: int = Field(
+        description="Menu Category ID",
+    )
+    name: str = Field(description="Name of the menu item", min_length=3, max_length=50)
+    description: str = Field(
+        description="Description of the menu item", min_length=3, max_length=50
+    )
+    price: float = Field(
+        description="Price of the menu item",
+    )
+    vegetarian: bool = Field(
+        description="Is the menu item vegetarian",
+    )
+    vegan: bool = Field(
+        description="Is the menu item vegan",
+    )
+    gluten_free: bool = Field(
+        description="Is the menu item gluten free",
+    )
+    spicy: bool = Field(
+        description="Is the menu item spicy",
+    )
+
+
+class MenuItemList(BaseModel):
+    """Menu Item List model."""
+
+    menu_items: List[MenuItem]

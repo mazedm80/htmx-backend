@@ -3,13 +3,13 @@ from fastapi import APIRouter, Depends
 from api.restaurant.schemas import Restaurant, RestaurantsList, Table, TablesList
 from api.restaurant.services import (
     create_restaurant,
-    fetch_restaurant,
-    remove_restaurant,
-    update_restaurant,
-    fetch_tables,
     create_table,
-    update_table,
+    fetch_restaurant,
+    fetch_tables,
+    remove_restaurant,
     remove_table,
+    update_restaurant,
+    update_table,
 )
 from core.auth.models import AuthGroup, Permission, TokenData
 from core.auth.services import PermissionChecker
@@ -174,7 +174,7 @@ async def add_table(
 
 
 @router.put("/update-table/{restaurant_id}")
-async def update_table(
+async def put_table(
     restaurant_id: int,
     table: Table,
     authorize: TokenData = Depends(

@@ -1,5 +1,6 @@
 # Targets
 BUILD_NUMBER ?= 0
+DOCKER_IMAGE_NAME ?= "pyhtmx"
 SHORT_HASH := $(shell git rev-parse --short HEAD)
 SHELL := /bin/bash
 
@@ -11,7 +12,7 @@ clear: ## Clear all build files and folders
 
 codestyle: ## Apply codestyle
 	@source .env/bin/activate; \
-		black .; \
+		ruff . --fix; \
 		isort .;
 
 run: ## Execute the service locally
@@ -40,9 +41,34 @@ env:
 check-%:
 	@#$(or ${$*}, $(error $* is not set))
 
+docker-build: ## Build docker image
+	@docker build -t ${DOCKER_IMAGE_NAME}:${SHORT_HASH} --build-arg BUILD_NUMBER=${SHORT_HASH} --no-cache .
+
+docker-stop: ## Stop docker image
+	@docker stop ${DOCKER_IMAGE_NAME}
+
+docker-remove: ## Remove docker image
+	@docker rm -f ${DOCKER_IMAGE_NAME}
+
+docker-run: ## Run docker image
+	@docker run \
+	--name pyhtmx \
+	--restart always \
+	-p 8000:80 \
+	-e MAX_WORKERS=2 \
+	-e PSQL__HOST="mirserver" \
+	-e PSQL__PORT=5432 \
+	-e PSQL__USER="htmx" \
+	-e PSQL__PASSWORD="htmx123" \
+	-e PSQL__DATABASE="pyhtmx" \
+	-d pyhtmx:${SHORT_HASH}
 # Aliases
 .PHONY: i r t cl cs
 
+db: docker-build
+dr: docker-run
+drr: docker-remove
+ds: docker-stop
 i: install
 r: run
 t: test

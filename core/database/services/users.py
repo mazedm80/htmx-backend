@@ -2,8 +2,8 @@ from sqlalchemy import select
 
 from core.auth.models import TokenData
 from core.base.error import DatabaseQueryException
-from core.database import PSQLHandler
 from core.database.orm.users import User, UserPermission
+from core.database.postgres import PSQLHandler
 
 
 async def verify_user(email: str, password: str) -> bool:

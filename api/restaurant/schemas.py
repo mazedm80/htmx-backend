@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel, Field
 
 
 class Restaurant(BaseModel):
-    """Restaurant model"""
+    """Restaurant model."""
 
     id: int = Field(
         description="Id of the restaurant. It is not required for creation.",
@@ -43,20 +43,20 @@ class Restaurant(BaseModel):
 
 
 class RestaurantsList(BaseModel):
-    """RestaurantsList model"""
+    """RestaurantsList model."""
 
     restaurants: List[Restaurant]
 
 
 class RestaurantAccess(BaseModel):
-    """RestaurantAccess model"""
+    """RestaurantAccess model."""
 
     user_id: int
     restaurant_id: int
 
 
 class Table(BaseModel):
-    """Table model"""
+    """Table model."""
 
     id: int = Field(
         description="Id of the table. It is not required for creation.",
@@ -67,6 +67,6 @@ class Table(BaseModel):
 
 
 class TablesList(BaseModel):
-    """TablesList model"""
+    """TablesList model."""
 
     tables: List[Table]

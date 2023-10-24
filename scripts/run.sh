@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export API__PORT=8000
+export API__PORT=3600
 export API__DEBUG=True
 export API__SECRET_KEY=""
 

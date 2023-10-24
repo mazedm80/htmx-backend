@@ -1,5 +1,3 @@
-from fastapi import HTTPException, status
-
 from core.auth.models import Token
 from core.auth.services import create_access_token
 from core.base.error import UnauthorizedException

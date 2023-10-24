@@ -4,10 +4,9 @@ src_paths = ["api", "config", "core", "tests"]
 skip_gitignore = true
 skip_glob = ["*pb2.py"]
 
-[tool.black]
-line-length = 88
-target-version = ['py36', 'py37', 'py38']
-include = '\.pyi?$'
+[tool.ruff]
+fix = true
+src = ["api", "config", "core", "tests"]
 
 [tool.poetry]
 name = "py-htmx"
@@ -21,8 +20,6 @@ readme = "README.md"
 python = "^3.8"
 pydantic-settings = "^2.0.3"
 pydantic = "^2.3.0"
-black = "^23.9.1"
-isort = "^5.12.0"
 python-jose = "^3.3.0"
 passlib = "^1.7.4"
 python-multipart = "^0.0.6"
@@ -33,6 +30,8 @@ geoalchemy2 = "^0.14.1"
 [tool.poetry.group.dev.dependencies]
 fastapi = "^0.103.1"
 uvicorn = "^0.23.2"
+ruff = "^0.1.2"
+isort = "^5.12.0"
 
 [build-system]
 requires = ["poetry-core"]

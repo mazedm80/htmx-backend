@@ -22,7 +22,7 @@ class PSQL(BaseModel):
 class API(BaseModel):
     """Schema for configuring API parameters."""
 
-    host: str = "127.0.0.1"
+    host: str = "localhost"
     port: int = 3600
     debug: bool = False
     workers: int = 1

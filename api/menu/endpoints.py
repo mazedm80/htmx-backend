@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from fastapi import APIRouter, Depends, status
 
 from api.restaurant.schemas import Restaurant, RestaurantsList
@@ -11,7 +9,7 @@ from api.restaurant.services import (
 )
 from core.auth.models import AuthGroup, Permission, TokenData
 from core.auth.services import PermissionChecker
-from core.base.error import UnauthorizedException, ValidationException
+from core.base.error import UnauthorizedException
 
 router = APIRouter(
     prefix="/restaurant",

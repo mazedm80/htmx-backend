@@ -3,13 +3,13 @@ from typing import List, Optional
 from api.restaurant.schemas import Restaurant, Table
 from core.database.services.restaurants import (
     delete_restaurant_by_id,
-    get_all_restaurants,
-    insert_restaurant,
-    update_restaurant_by_id,
-    get_tables_by_id,
-    insert_table_by_id,
-    update_table_by_id,
     delete_table_by_id,
+    get_all_restaurants,
+    get_tables_by_id,
+    insert_restaurant,
+    insert_table_by_id,
+    update_restaurant_by_id,
+    update_table_by_id,
 )
 
 
