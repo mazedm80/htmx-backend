@@ -3,14 +3,18 @@ from typing import List, Optional
 from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 
-from api.restaurant.schemas import Restaurant
+from api.restaurant.schemas import Restaurant, Table
 from core.base.error import (
     DatabaseInsertException,
     DatabaseQueryException,
     UnauthorizedException,
 )
 from core.database import PSQLHandler
-from core.database.orm.restaurants import RestaurantAccessTB, RestaurantTB
+from core.database.orm.restaurants import (
+    RestaurantAccessTB,
+    RestaurantTB,
+    RestaurantTableTB,
+)
 
 
 async def get_access_permissions(user_id: int, restaurant_id: int) -> bool:
@@ -29,6 +33,7 @@ async def get_access_permissions(user_id: int, restaurant_id: int) -> bool:
     return True
 
 
+# Restaurant
 async def get_all_restaurants(user_id: Optional[int] = None) -> List[Restaurant]:
     if user_id is None:
         statement = select(RestaurantTB)
@@ -136,6 +141,74 @@ async def delete_restaurant_by_id(restaurant_id: int, user_id: int) -> None:
         delete(RestaurantTB)
         .where(RestaurantTB.id == restaurant_id)
         .returning(RestaurantTB.id)
+    )
+    try:
+        await PSQLHandler().execute_commit(statement=statement)
+    except Exception:
+        raise DatabaseInsertException
+
+
+# Table
+async def get_tables_by_id(restaurant_id: int, user_id: int) -> List[Table]:
+    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+        raise UnauthorizedException
+    statement = select(RestaurantTableTB).where(
+        RestaurantTableTB.restaurant_id == restaurant_id
+    )
+    try:
+        query = await PSQLHandler().execute(statement=statement)
+    except Exception:
+        raise DatabaseQueryException
+    tables = query.scalars()
+    tables_list = []
+    for table in tables:
+        tables_list.append(
+            Table(
+                table_number=table.table_number,
+            )
+        )
+    return tables_list
+
+
+async def insert_table_by_id(table: Table, restaurant_id: int, user_id: int) -> None:
+    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+        raise UnauthorizedException
+    statement = insert(RestaurantTableTB).values(
+        restaurant_id=restaurant_id,
+        table_number=table.table_number,
+    )
+    try:
+        await PSQLHandler().execute_commit(statement=statement)
+    except Exception:
+        raise DatabaseInsertException
+
+
+async def update_table_by_id(table: Table, restaurant_id: int, user_id: int) -> Table:
+    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+        raise UnauthorizedException
+    statement = (
+        update(RestaurantTableTB)
+        .where(RestaurantTableTB.restaurant_id == restaurant_id)
+        .where(RestaurantTableTB.table_number == table.table_number)
+        .values(table_number=table.table_number)
+    )
+    try:
+        await PSQLHandler().execute_commit(statement=statement)
+    except Exception:
+        raise DatabaseInsertException
+    return table
+
+
+async def delete_table_by_id(
+    table_number: int, restaurant_id: int, user_id: int
+) -> None:
+    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+        raise UnauthorizedException
+    statement = (
+        delete(RestaurantTableTB)
+        .where(RestaurantTableTB.restaurant_id == restaurant_id)
+        .where(RestaurantTableTB.table_number == table_number)
+        .returning(RestaurantTableTB.id)
     )
     try:
         await PSQLHandler().execute_commit(statement=statement)

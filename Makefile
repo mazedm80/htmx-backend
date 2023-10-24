@@ -9,7 +9,7 @@ SHELL := /bin/bash
 clear: ## Clear all build files and folders
 	rm -rf dist build *.egg-info .env cache
 
-codestyle: env ## Apply codestyle
+codestyle: ## Apply codestyle
 	@source .env/bin/activate; \
 		black .; \
 		isort .;
@@ -26,18 +26,15 @@ install: env ## Create a virtual environment and install package with all depend
 		poetry config virtualenvs.create false; \
 		poetry install
 
-test: install ## Run pytest against package
+test: ## Run pytest against package
 	@source .env/bin/activate; \
 		scripts/run_tests.sh
-
-tailwind: env
-	@source .env/bin/activate; \
-		tailwindcss -i ./static/css/input.css -o ./static/css/style.css --watch
 
 env:
 	@python3 -m venv .env
 	@source .env/bin/activate \
 		&& pip install -qU pip \
+		&& pip install -q "black>=23.9.1" "isort>=5.12.0" "poetry>=1.6.1" "pytest>=7.4.2" \
 		&& poetry self add --quiet poetry-bumpversion@latest
 
 check-%:

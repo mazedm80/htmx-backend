@@ -53,20 +53,3 @@ class RestaurantAccess(BaseModel):
 
     user_id: int
     restaurant_id: int
-
-
-class Table(BaseModel):
-    """Table model"""
-
-    id: int = Field(
-        description="Id of the table. It is not required for creation.",
-        default=None,
-    )
-    restaurant_id: int = Field(description="Id of the restaurant")
-    table_number: int = Field(description="Table number of the table.")
-
-
-class TablesList(BaseModel):
-    """TablesList model"""
-
-    tables: List[Table]
