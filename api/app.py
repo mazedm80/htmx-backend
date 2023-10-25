@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from api.auth.endpoints import router as auth_router
+from api.menu.endpoints import router as menu_router
 from api.restaurant.endpoints import router as restaurant_router
 
 app = FastAPI(
@@ -12,4 +13,5 @@ app = FastAPI(
 )
 
 app.include_router(auth_router)
+app.include_router(menu_router)
 app.include_router(restaurant_router)

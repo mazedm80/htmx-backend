@@ -1,31 +1,73 @@
 from typing import List, Optional
 
 from api.restaurant.schemas import Restaurant
-from core.database.services.restaurants import (
-    delete_restaurant_by_id,
-    get_all_restaurants,
-    insert_restaurant,
-    update_restaurant_by_id,
+from core.database.services.menus import (
+    delete_menu_category,
+    delete_menu_item,
+    get_menu_categories,
+    get_menu_items,
+    insert_menu_category,
+    insert_menu_item,
+    update_menu_category,
+    update_menu_item,
 )
 
 
-async def fetch_restaurant(user_id: Optional[int]) -> List[Restaurant]:
-    restaurants = await get_all_restaurants(user_id=user_id)
-    return restaurants
+async def fetch_menu_categories(
+    user_id: int, restaurant_id: Optional[int] = None
+) -> List[Restaurant]:
+    return await get_menu_categories(user_id=user_id, restaurant_id=restaurant_id)
 
 
-async def create_restaurant(restaurant: Restaurant, user_id: int) -> None:
-    restaurant = await insert_restaurant(restaurant=restaurant, user_id=user_id)
-
-
-async def update_restaurant(
-    restaurant: Restaurant, restaurant_id: int, user_id: int
-) -> Restaurant:
-    restaurant = await update_restaurant_by_id(
-        restaurant=restaurant, restaurant_id=restaurant_id, user_id=user_id
+async def create_menu_category(
+    user_id: int, restaurant_id: int, menu_category: Restaurant
+) -> None:
+    await insert_menu_category(
+        user_id=user_id, restaurant_id=restaurant_id, menu_category=menu_category
     )
-    return restaurant
 
 
-async def remove_restaurant(restaurant_id: int, user_id: int) -> None:
-    await delete_restaurant_by_id(restaurant_id=restaurant_id, user_id=user_id)
+async def modify_menu_category(
+    user_id: int, restaurant_id: int, menu_category: Restaurant
+) -> None:
+    await update_menu_category(
+        user_id=user_id, restaurant_id=restaurant_id, menu_category=menu_category
+    )
+
+
+async def remove_menu_category(
+    user_id: int, restaurant_id: int, menu_category: Restaurant
+) -> None:
+    await delete_menu_category(
+        user_id=user_id, restaurant_id=restaurant_id, menu_category=menu_category
+    )
+
+
+async def fetch_menu_items(
+    user_id: int, restaurant_id: Optional[int] = None
+) -> List[Restaurant]:
+    return await get_menu_items(user_id=user_id, restaurant_id=restaurant_id)
+
+
+async def create_menu_item(
+    user_id: int, restaurant_id: int, menu_item: Restaurant
+) -> None:
+    await insert_menu_item(
+        user_id=user_id, restaurant_id=restaurant_id, menu_item=menu_item
+    )
+
+
+async def modify_menu_item(
+    user_id: int, restaurant_id: int, menu_item: Restaurant
+) -> None:
+    await update_menu_item(
+        user_id=user_id, restaurant_id=restaurant_id, menu_item=menu_item
+    )
+
+
+async def remove_menu_item(
+    user_id: int, restaurant_id: int, menu_item: Restaurant
+) -> None:
+    await delete_menu_item(
+        user_id=user_id, restaurant_id=restaurant_id, menu_item=menu_item
+    )

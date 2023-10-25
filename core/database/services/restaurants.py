@@ -17,7 +17,7 @@ from core.database.orm.restaurants import (
 from core.database.postgres import PSQLHandler
 
 
-async def get_access_permissions(user_id: int, restaurant_id: int) -> bool:
+async def access_permission(user_id: int, restaurant_id: int) -> bool:
     statement = (
         select(RestaurantAccessTB.id)
         .where(RestaurantAccessTB.user_id == user_id)
@@ -34,7 +34,7 @@ async def get_access_permissions(user_id: int, restaurant_id: int) -> bool:
 
 
 # Restaurant
-async def get_all_restaurants(user_id: Optional[int] = None) -> List[Restaurant]:
+async def get_restaurant(user_id: Optional[int] = None) -> List[Restaurant]:
     if user_id is None:
         statement = select(RestaurantTB)
     else:
@@ -92,10 +92,10 @@ async def insert_restaurant(restaurant: Restaurant, user_id: int) -> None:
     return None
 
 
-async def update_restaurant_by_id(
+async def update_restaurant(
     restaurant: Restaurant, restaurant_id: int, user_id: int
 ) -> Restaurant:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = (
         update(RestaurantTB)
@@ -135,8 +135,8 @@ async def update_restaurant_by_id(
     )
 
 
-async def delete_restaurant_by_id(restaurant_id: int, user_id: int) -> None:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+async def delete_restaurant(restaurant_id: int, user_id: int) -> None:
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = (
         delete(RestaurantTB)
@@ -151,8 +151,8 @@ async def delete_restaurant_by_id(restaurant_id: int, user_id: int) -> None:
 
 
 # Table
-async def get_tables_by_id(restaurant_id: int, user_id: int) -> List[Table]:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+async def get_tables(restaurant_id: int, user_id: int) -> List[Table]:
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = select(RestaurantTableTB).where(
         RestaurantTableTB.restaurant_id == restaurant_id
@@ -172,8 +172,8 @@ async def get_tables_by_id(restaurant_id: int, user_id: int) -> List[Table]:
     return tables_list
 
 
-async def insert_table_by_id(table: Table, restaurant_id: int, user_id: int) -> None:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+async def insert_table(table: Table, restaurant_id: int, user_id: int) -> None:
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = insert(RestaurantTableTB).values(
         restaurant_id=restaurant_id,
@@ -186,8 +186,8 @@ async def insert_table_by_id(table: Table, restaurant_id: int, user_id: int) -> 
     return None
 
 
-async def update_table_by_id(table: Table, restaurant_id: int, user_id: int) -> Table:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+async def update_table(table: Table, restaurant_id: int, user_id: int) -> Table:
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = (
         update(RestaurantTableTB)
@@ -202,10 +202,8 @@ async def update_table_by_id(table: Table, restaurant_id: int, user_id: int) -> 
     return table
 
 
-async def delete_table_by_id(
-    table_number: int, restaurant_id: int, user_id: int
-) -> None:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+async def delete_table(table_number: int, restaurant_id: int, user_id: int) -> None:
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = (
         delete(RestaurantTableTB)

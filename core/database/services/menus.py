@@ -9,22 +9,22 @@ from core.base.error import (
     DatabaseQueryException,
     UnauthorizedException,
 )
+from core.database.orm.menus import MenuCategoryTB, MenuItemTB
 from core.database.postgres import PSQLHandler
-from core.database.orm.menus import (
-    MenuCategoryTB,
-    MenuItemTB,
-)
-from core.database.services.restaurants import get_access_permissions
+from core.database.services.restaurants import access_permission
 
 
-async def get_all_menu_categories(
-    user_id: int, restaurant_id: int
+async def get_menu_categories(
+    user_id: int, restaurant_id: Optional[int] = None
 ) -> List[MenuCategory]:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
-        raise UnauthorizedException
-    statement = select(MenuCategoryTB).where(
-        MenuCategoryTB.restaurant_id == restaurant_id
-    )
+    if restaurant_id is None:
+        statement = select(MenuCategoryTB)
+    else:
+        if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
+            raise UnauthorizedException
+        statement = select(MenuCategoryTB).where(
+            MenuCategoryTB.restaurant_id == restaurant_id
+        )
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
@@ -45,7 +45,7 @@ async def get_all_menu_categories(
 async def insert_menu_category(
     user_id: int, restaurant_id: int, menu_category: MenuCategory
 ) -> None:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = insert(MenuCategoryTB).values(
         restaurant_id=restaurant_id,
@@ -61,7 +61,7 @@ async def insert_menu_category(
 async def update_menu_category(
     user_id: int, restaurant_id: int, menu_category: MenuCategory
 ) -> MenuCategory:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = (
         update(MenuCategoryTB)
@@ -78,7 +78,7 @@ async def update_menu_category(
 async def delete_menu_category(
     user_id: int, restaurant_id: int, menu_category_id: int
 ) -> None:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = delete(MenuCategoryTB).where(MenuCategoryTB.id == menu_category_id)
     try:
@@ -88,10 +88,10 @@ async def delete_menu_category(
     return None
 
 
-async def get_all_menu_items(
+async def get_menu_items(
     user_id: int, restaurant_id: int, menu_category_id: Optional[int] = None
 ) -> List[MenuItem]:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     if menu_category_id is None:
         statement = select(MenuItemTB).where(
@@ -129,7 +129,7 @@ async def get_all_menu_items(
 async def insert_menu_item(
     user_id: int, restaurant_id: int, menu_item: MenuItem
 ) -> None:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = insert(MenuItemTB).values(
         restaurant_id=restaurant_id,
@@ -152,7 +152,7 @@ async def insert_menu_item(
 async def update_menu_item(
     user_id: int, restaurant_id: int, menu_item: MenuItem
 ) -> MenuItem:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = (
         update(MenuItemTB)
@@ -176,7 +176,7 @@ async def update_menu_item(
 
 
 async def delete_menu_item(user_id: int, restaurant_id: int, menu_item_id: int) -> None:
-    if not await get_access_permissions(user_id=user_id, restaurant_id=restaurant_id):
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
         raise UnauthorizedException
     statement = delete(MenuItemTB).where(MenuItemTB.id == menu_item_id)
     try:

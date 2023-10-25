@@ -6,10 +6,10 @@ from api.restaurant.services import (
     create_table,
     fetch_restaurant,
     fetch_tables,
+    modify_restaurant,
+    modify_table,
     remove_restaurant,
     remove_table,
-    update_restaurant,
-    update_table,
 )
 from core.auth.models import AuthGroup, Permission, TokenData
 from core.auth.services import PermissionChecker
@@ -21,7 +21,7 @@ router = APIRouter(
 )
 
 
-@router.get("/all")
+@router.get("/")
 async def get_restaurants(
     authorize: TokenData = Depends(
         PermissionChecker(
@@ -52,7 +52,7 @@ async def get_restaurants(
     raise UnauthorizedException
 
 
-@router.post("/create")
+@router.post("/")
 async def post_restaurant(
     restaurant: Restaurant,
     authorize: TokenData = Depends(
@@ -74,7 +74,7 @@ async def post_restaurant(
     raise UnauthorizedException
 
 
-@router.put("/update/{restaurant_id}")
+@router.put("/{restaurant_id}")
 async def put_restaurant(
     restaurant_id: int,
     restaurant: Restaurant,
@@ -92,7 +92,7 @@ async def put_restaurant(
     ),
 ) -> Restaurant:
     if authorize.user_id:
-        restaurant = await update_restaurant(
+        restaurant = await modify_restaurant(
             restaurant_id=restaurant_id,
             restaurant=restaurant,
             user_id=authorize.user_id,
@@ -101,7 +101,7 @@ async def put_restaurant(
     raise UnauthorizedException
 
 
-@router.delete("/delete/{restaurant_id}")
+@router.delete("/{restaurant_id}")
 async def delete_restaurant(
     restaurant_id: int,
     authorize: TokenData = Depends(
@@ -124,7 +124,7 @@ async def delete_restaurant(
 
 
 # Restaurant table
-@router.get("/tables/{restaurant_id}")
+@router.get("/table/{restaurant_id}")
 async def get_tables(
     restaurant_id: int,
     authorize: TokenData = Depends(
@@ -148,7 +148,7 @@ async def get_tables(
     raise UnauthorizedException
 
 
-@router.post("/add-table/{restaurant_id}")
+@router.post("/table/{restaurant_id}")
 async def add_table(
     restaurant_id: int,
     table: Table,
@@ -173,7 +173,7 @@ async def add_table(
     raise UnauthorizedException
 
 
-@router.put("/update-table/{restaurant_id}")
+@router.put("/table/{restaurant_id}")
 async def put_table(
     restaurant_id: int,
     table: Table,
@@ -191,14 +191,14 @@ async def put_table(
     ),
 ) -> Table:
     if authorize.user_id:
-        table = await update_table(
+        table = await modify_table(
             restaurant_id=restaurant_id, table=table, user_id=authorize.user_id
         )
         return table
     raise UnauthorizedException
 
 
-@router.delete("/delete-table/{restaurant_id}")
+@router.delete("/table/{restaurant_id}")
 async def delete_table(
     restaurant_id: int,
     table_id: int,

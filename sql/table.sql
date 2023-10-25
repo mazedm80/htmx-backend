@@ -105,3 +105,18 @@ CREATE TABLE IF NOT EXISTS public.menu_items
     updated_at timestamp with time zone DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS menu_items_restaurant_id_idx ON public.menu_items USING btree (restaurant_id);
+-- Order status Enum
+DROP TYPE IF EXISTS order_status;
+CREATE TYPE order_status AS ENUM ('pending', 'accepted', 'rejected', 'completed');
+-- Order table
+DROP TABLE IF EXISTS public.orders;
+CREATE TABLE IF NOT EXISTS public.orders
+(
+    id SERIAL NOT NULL PRIMARY KEY,
+    
+    restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
+    table_number integer NOT NULL,
+    status order_status NOT NULL DEFAULT 'pending',
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);

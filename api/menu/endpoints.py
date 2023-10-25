@@ -1,81 +1,29 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 
-from api.restaurant.schemas import Restaurant, RestaurantsList
-from api.restaurant.services import (
-    create_restaurant,
-    fetch_restaurant,
-    remove_restaurant,
-    update_restaurant,
+from api.menu.schemas import MenuCategory, MenuCategoryList, MenuItem, MenuItemList
+from api.menu.services import (
+    create_menu_category,
+    create_menu_item,
+    fetch_menu_categories,
+    fetch_menu_items,
+    modify_menu_category,
+    modify_menu_item,
+    remove_menu_category,
+    remove_menu_item,
 )
 from core.auth.models import AuthGroup, Permission, TokenData
 from core.auth.services import PermissionChecker
 from core.base.error import UnauthorizedException
 
 router = APIRouter(
-    prefix="/restaurant",
-    tags=["restaurant"],
+    prefix="/menu",
+    tags=["menu"],
 )
 
 
-# permission for admin, manager, waiter
-@router.get("/all")
-async def get_restaurants(
-    authorize: TokenData = Depends(
-        PermissionChecker(
-            Permission(
-                groups=[
-                    AuthGroup.SUPER_ADMIN,
-                    AuthGroup.ADMIN,
-                    AuthGroup.OWNER,
-                    AuthGroup.MANAGER,
-                ]
-            )
-        )
-    ),
-) -> RestaurantsList:
-    user_id = authorize.user_id
-    if (
-        authorize.auth_group == AuthGroup.SUPER_ADMIN
-        or authorize.auth_group == AuthGroup.ADMIN
-    ):
-        restaurants = await fetch_restaurant(user_id=None)
-        return RestaurantsList(restaurants=restaurants)
-    elif (
-        authorize.auth_group == AuthGroup.OWNER
-        or authorize.auth_group == AuthGroup.MANAGER
-    ):
-        restaurants = await fetch_restaurant(user_id=user_id)
-        return RestaurantsList(restaurants=restaurants)
-    raise UnauthorizedException
-
-
-@router.post("/create", status_code=status.HTTP_201_CREATED)
-async def post_restaurant(
-    restaurant: Restaurant,
-    authorize: TokenData = Depends(
-        PermissionChecker(
-            Permission(
-                groups=[
-                    AuthGroup.SUPER_ADMIN,
-                    AuthGroup.ADMIN,
-                    AuthGroup.OWNER,
-                    AuthGroup.MANAGER,
-                ]
-            )
-        )
-    ),
-):
-    if authorize.user_id:
-        await create_restaurant(restaurant=restaurant, user_id=authorize.user_id)
-        return {"message": "Restaurant created successfully"}
-    raise UnauthorizedException
-
-
-# update restaurant by id
-@router.put("/update/{restaurant_id}")
-async def put_restaurant(
+@router.get("/{restaurant_id}")
+async def get_menu_items(
     restaurant_id: int,
-    restaurant: Restaurant,
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -88,20 +36,72 @@ async def put_restaurant(
             )
         )
     ),
-) -> Restaurant:
+) -> MenuItemList:
     if authorize.user_id:
-        restaurant = await update_restaurant(
-            restaurant_id=restaurant_id,
-            restaurant=restaurant,
+        menu_items = await fetch_menu_items(
             user_id=authorize.user_id,
+            restaurant_id=restaurant_id,
         )
-        return restaurant
+        return MenuItemList(menu_items=menu_items)
     raise UnauthorizedException
 
 
-# delete restaurant by id
-@router.delete("/delete/{restaurant_id}")
-async def delete_restaurant(
+@router.post("/{restaurant_id}")
+async def post_menu_item(
+    restaurant_id: int,
+    menu_item: MenuItem,
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> None:
+    if authorize.user_id:
+        await create_menu_item(
+            user_id=authorize.user_id,
+            restaurant_id=restaurant_id,
+            menu_item=menu_item,
+        )
+        return None
+    raise UnauthorizedException
+
+
+@router.put("/{restaurant_id}")
+async def put_menu_item(
+    restaurant_id: int,
+    menu_item: MenuItem,
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> None:
+    if authorize.user_id:
+        await modify_menu_item(
+            user_id=authorize.user_id,
+            restaurant_id=restaurant_id,
+            menu_item=menu_item,
+        )
+        return None
+    raise UnauthorizedException
+
+
+@router.delete("/{restaurant_id}")
+async def delete_menu_item(
     restaurant_id: int,
     authorize: TokenData = Depends(
         PermissionChecker(
@@ -115,8 +115,117 @@ async def delete_restaurant(
             )
         )
     ),
-):
+) -> None:
     if authorize.user_id:
-        await remove_restaurant(restaurant_id=restaurant_id, user_id=authorize.user_id)
-        return {"message": "Restaurant deleted successfully"}
+        await remove_menu_item(
+            user_id=authorize.user_id,
+            restaurant_id=restaurant_id,
+        )
+        return None
+    raise UnauthorizedException
+
+
+@router.get("categories/{restaurant_id}")
+async def get_menu_categories(
+    restaurant_id: int,
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> MenuCategoryList:
+    if authorize.user_id:
+        menu_categories = await fetch_menu_categories(
+            user_id=authorize.user_id,
+            restaurant_id=restaurant_id,
+        )
+        return MenuCategoryList(menu_categories=menu_categories)
+    raise UnauthorizedException
+
+
+@router.post("categories/{restaurant_id}")
+async def post_menu_category(
+    restaurant_id: int,
+    menu_category: MenuCategory,
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> None:
+    if authorize.user_id:
+        await create_menu_category(
+            user_id=authorize.user_id,
+            restaurant_id=restaurant_id,
+            menu_category=menu_category,
+        )
+        return None
+    raise UnauthorizedException
+
+
+@router.put("categories/{restaurant_id}")
+async def put_menu_category(
+    restaurant_id: int,
+    menu_category: MenuCategory,
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> None:
+    if authorize.user_id:
+        await modify_menu_category(
+            user_id=authorize.user_id,
+            restaurant_id=restaurant_id,
+            menu_category=menu_category,
+        )
+        return None
+    raise UnauthorizedException
+
+
+@router.delete("categories/{restaurant_id}/{menu_category_id}")
+async def delete_menu_category(
+    restaurant_id: int,
+    menu_category_id: int,
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> None:
+    if authorize.user_id:
+        await remove_menu_category(
+            user_id=authorize.user_id,
+            restaurant_id=restaurant_id,
+            menu_category_id=menu_category_id,
+        )
+        return None
     raise UnauthorizedException
