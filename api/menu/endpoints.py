@@ -125,6 +125,30 @@ async def delete_menu_item(
     raise UnauthorizedException
 
 
+@router.get("categories/")
+async def get_menu_categories(
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> MenuCategoryList:
+    if authorize.user_id:
+        menu_categories = await fetch_menu_categories(
+            user_id=authorize.user_id,
+            restaurant_id=None,
+        )
+        return MenuCategoryList(menu_categories=menu_categories)
+    raise UnauthorizedException
+
+
 @router.get("categories/{restaurant_id}")
 async def get_menu_categories(
     restaurant_id: int,
