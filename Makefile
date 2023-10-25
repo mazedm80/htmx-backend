@@ -62,6 +62,9 @@ docker-run: ## Run docker image
 	-e PSQL__PASSWORD="htmx123" \
 	-e PSQL__DATABASE="pyhtmx" \
 	-d pyhtmx:${SHORT_HASH}
+
+cloudfare: ## Deploy to cloudfare
+	@docker run --detach cloudflare/cloudflared:latest tunnel --no-autoupdate run --token eyJhIjoiYjMxMjU0ZWFmYTkyNDA0NDAwODY0MmZiZmI1ZDE5YTgiLCJ0IjoiMzE4Y2ViY2MtOWUxZi00ODgwLTllYTUtOTA2ZjIxNTBjNjg0IiwicyI6IlpqWmxZakU1WW1VdE5qa3paaTAwT1dGaExXSTBNVEV0TW1SbE5tTmtaV1U1Tm1OaSJ9
 # Aliases
 .PHONY: i r t cl cs
 
