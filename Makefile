@@ -27,9 +27,9 @@ install: env ## Create a virtual environment and install package with all depend
 		poetry config virtualenvs.create false; \
 		poetry install
 
-test: ## Run pytest against package
+test: install ## Run pytest against package
 	@source .env/bin/activate; \
-		scripts/run_tests.sh
+		pytest -v --cov=pyhtmx --cov-report=term-missing --cov-report=xml tests/
 
 env:
 	@python3 -m venv .env
