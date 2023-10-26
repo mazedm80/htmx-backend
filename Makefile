@@ -42,7 +42,7 @@ check-%:
 	@#$(or ${$*}, $(error $* is not set))
 
 docker-build: ## Build docker image
-	@docker build -t ${DOCKER_IMAGE_NAME}:${SHORT_HASH} --build-arg BUILD_NUMBER=${SHORT_HASH} --no-cache .
+	@docker build -t ${DOCKER_IMAGE_NAME} --build-arg BUILD_NUMBER=${SHORT_HASH} --no-cache .
 
 docker-stop: ## Stop docker image
 	@docker stop ${DOCKER_IMAGE_NAME}
@@ -61,7 +61,10 @@ docker-run: ## Run docker image
 	-e PSQL__USER="htmx" \
 	-e PSQL__PASSWORD="htmx123" \
 	-e PSQL__DATABASE="pyhtmx" \
-	-d pyhtmx:${SHORT_HASH}
+	-d pyhtmx:latest
+
+cloudfare: ## Deploy to cloudfare
+	@docker run --detach cloudflare/cloudflared:latest tunnel --no-autoupdate run --token eyJhIjoiYjMxMjU0ZWFmYTkyNDA0NDAwODY0MmZiZmI1ZDE5YTgiLCJ0IjoiMzE4Y2ViY2MtOWUxZi00ODgwLTllYTUtOTA2ZjIxNTBjNjg0IiwicyI6IlpqWmxZakU1WW1VdE5qa3paaTAwT1dGaExXSTBNVEV0TW1SbE5tTmtaV1U1Tm1OaSJ9
 # Aliases
 .PHONY: i r t cl cs
 
