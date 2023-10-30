@@ -33,7 +33,7 @@ class UserLogin(BaseModel):
     )
     password: str = Field(
         description="Password of the user. It must be between 8 and 50 characters.",
-        min_length=8,
+        min_length=3,
         max_length=50,
     )
 

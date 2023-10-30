@@ -1,9 +1,9 @@
-from sqlalchemy import BOOLEAN, INTEGER, TEXT, Column, DateTime, ForeignKey, func
+from sqlalchemy import BOOLEAN, INTEGER, TEXT, Column, Date, DateTime, ForeignKey, func
 
 from core.database import Base
 
 
-class User(Base):
+class UserTB(Base):
     """User model"""
 
     __table_args__ = {"schema": "public"}
@@ -12,7 +12,7 @@ class User(Base):
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     email = Column(TEXT, unique=True, nullable=False)
     name = Column(TEXT, nullable=False)
-    dob = Column(DateTime, nullable=False)
+    dob = Column(Date, nullable=False)
     password = Column(TEXT, nullable=False)
     is_active = Column(BOOLEAN, default=True)
     created_at = Column(DateTime, default=func.now())

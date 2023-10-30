@@ -1,11 +1,12 @@
 from passlib.context import CryptContext
 
-from sqlalchemy import select, insert
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert, dialect
 
 from api.auth.schemas import UserRegister, UserUpdate
 from core.auth.models import TokenData
-from core.base.error import DatabaseQueryException
-from core.database.orm.users import User, UserPermission
+from core.base.error import DatabaseQueryException, DatabaseInsertException
+from core.database.orm.users import UserTB, UserPermission
 from core.database.postgres import PSQLHandler
 
 
@@ -21,19 +22,19 @@ def get_password_hash(password: str) -> str:
 
 
 async def verify_user(email: str, password: str) -> bool:
-    statement = select(User).where(User.email == email)
+    statement = select(UserTB).where(UserTB.email == email)
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
         raise DatabaseQueryException
-    user = query.fetchone()[0]
+    user = query.scalar()
     if user:
-        return user.password == verify_password(password)
+        return verify_password(plain_password=password, hashed_password=user.password)
     return False
 
 
 async def get_user_permission(email: str) -> TokenData:
-    user_id = (select(User.id).where(User.email == email)).cte("user_id")
+    user_id = (select(UserTB.id).where(UserTB.email == email)).cte("user_id")
 
     statement = select(UserPermission.permission_id, UserPermission.user_id).join(
         user_id, user_id.c.id == UserPermission.user_id
@@ -49,33 +50,33 @@ async def get_user_permission(email: str) -> TokenData:
 
 
 async def email_exists(email: str) -> bool:
-    statement = select(User).where(User.email == email)
+    statement = select(UserTB.id).where(UserTB.email == email)
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
         raise DatabaseQueryException
-    user = query.fetchone()[0]
+    user = query.fetchone()
     if user:
         return True
     return False
 
 
-async def create_user(user: UserRegister) -> User:
-    statement = insert(User).values(
+async def create_user(user: UserRegister) -> None:
+    statement = insert(UserTB).values(
         name=user.name,
         email=user.email,
         password=get_password_hash(user.password2),
         dob=user.dob,
     )
     try:
-        query = await PSQLHandler().execute(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
-        raise DatabaseQueryException
-    return query.fetchone()[0]
+        raise DatabaseInsertException
+    return None
 
 
-async def get_user(email: str) -> User:
-    statement = select(User).where(User.email == email)
+async def get_user(email: str) -> UserTB:
+    statement = select(UserTB).where(UserTB.email == email)
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:

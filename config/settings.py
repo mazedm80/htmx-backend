@@ -12,7 +12,7 @@ class PSQL(BaseModel):
     port: int = 5432
     database: str = ""
     max_connections: int = 4
-    statement_timeout: float = 5.0
+    statement_timeout: float = 15.0
 
     def get_connection_url(self) -> str:
         """Returns the connection URL to establish an async connection to the PostgreSQL database."""

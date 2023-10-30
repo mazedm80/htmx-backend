@@ -1,6 +1,6 @@
 -- Description: This file contains the SQL commands to create the tables in the database.
 DROP USER IF EXISTS htmx;
-CREATE USER pyhtmx WITH
+CREATE USER htmx WITH
     NOSUPERUSER
     INHERIT
     CREATEDB
@@ -13,8 +13,14 @@ CREATE DATABASE pyhtmx
     WITH 
     OWNER = htmx
     ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.utf8'
+    LC_CTYPE = 'en_US.utf8'
     TABLESPACE = pg_default
-    CONNECTION LIMIT = -1;
+    CONNECTION LIMIT = -1
+    IS_TEMPLATE = False;
+
+-- Grant permissions to htmx user
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO htmx;
 -- User Table
 DROP TABLE IF EXISTS users;
 CREATE TABLE IF NOT EXISTS public.users
@@ -22,6 +28,7 @@ CREATE TABLE IF NOT EXISTS public.users
     id SERIAL NOT NULL PRIMARY KEY,
     email text NOT NULL,
     name text NOT NULL,
+    dob date NOT NULL,
     password text NOT NULL,
     is_active boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT now(),

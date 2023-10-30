@@ -31,6 +31,7 @@ class JWTSCHEME(HTTPBearer):
         if credentials:
             if not credentials.scheme == "Bearer":
                 raise UnauthorizedException
+            print(credentials.credentials)
             if not self.verify(token=credentials.credentials):
                 raise UnauthorizedException
             return credentials.credentials

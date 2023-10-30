@@ -23,14 +23,11 @@ async def login(form_data: UserLogin = Depends()):
 
 
 @router.post("/register")
-async def register(user: UserRegister = Depends()) -> User:
+async def register(user: UserRegister = Depends()):
     """Register endpoint"""
 
-    try:
-        user = await post_user(user)
-    except Exception:
-        raise UnauthorizedException
-    return user
+    await post_user(user=user)
+    return {"message": "User created successfully"}
 
 
 @router.get("/me", response_model=User)
