@@ -1,3 +1,20 @@
+-- Description: This file contains the SQL commands to create the tables in the database.
+DROP USER IF EXISTS htmx;
+CREATE USER pyhtmx WITH
+    NOSUPERUSER
+    INHERIT
+    CREATEDB
+    LOGIN
+    PASSWORD 'htmx123';
+
+-- Database: pyhtmx
+DROP DATABASE IF EXISTS pyhtmx;
+CREATE DATABASE pyhtmx
+    WITH 
+    OWNER = htmx
+    ENCODING = 'UTF8'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
 -- User Table
 DROP TABLE IF EXISTS users;
 CREATE TABLE IF NOT EXISTS public.users
