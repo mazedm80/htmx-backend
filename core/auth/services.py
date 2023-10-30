@@ -1,9 +1,13 @@
-from typing import Annotated
+from datetime import datetime, timedelta
+from typing import Annotated, Optional
 
-from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, Request
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    HTTPAuthorizationCredentials,
+    HTTPBearer,
+)
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from core.auth.models import Permission, Token, TokenData
 from core.base.error import UnauthorizedException, ValidationException
@@ -14,19 +18,46 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def verify_password(plain_password, hashed_password) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+class JWTSCHEME(HTTPBearer):
+    def __init__(self, auto_error: bool = True):
+        super().__init__(auto_error=auto_error)
+
+    async def __call__(self, request: Request) -> Annotated[str, "JWTSCHEME.__call__"]:
+        credentials: HTTPAuthorizationCredentials = await super().__call__(
+            request=request
+        )
+        if credentials:
+            if not credentials.scheme == "Bearer":
+                raise UnauthorizedException
+            if not self.verify(token=credentials.credentials):
+                raise UnauthorizedException
+            return credentials.credentials
+        raise UnauthorizedException
+
+    def verify(self, token: str) -> bool:
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        except JWTError:
+            return False
+        return True
 
 
-def get_password_hash(password) -> str:
-    return pwd_context.hash(password)
+http_scheme = JWTSCHEME()
 
 
-def create_access_token(data: dict) -> Annotated[str, "Create access token"]:
+def create_access_token(
+    data: dict, expires_delta: Optional[timedelta]
+) -> Annotated[str, "Create access token"]:
     to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    issued_at = datetime.utcnow()
+    to_encode.update({"iat": issued_at})
     try:
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     except JWTError:
@@ -34,7 +65,7 @@ def create_access_token(data: dict) -> Annotated[str, "Create access token"]:
     return encoded_jwt
 
 
-async def get_current_user(token: Token = Depends(oauth2_scheme)) -> str:
+async def get_user_email_from_token(token: Token = Depends(http_scheme)) -> str:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
@@ -49,7 +80,9 @@ class PermissionChecker:
     def __init__(self, permission: Permission) -> None:
         self.permission = permission
 
-    async def __call__(self, email: str = Depends(get_current_user)) -> TokenData:
+    async def __call__(
+        self, email: str = Depends(get_user_email_from_token)
+    ) -> TokenData:
         token_data = await get_user_permission(email=email)
         if token_data is None:
             raise ValidationException

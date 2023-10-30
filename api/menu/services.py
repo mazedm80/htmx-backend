@@ -14,7 +14,7 @@ from core.database.services.menus import (
 
 
 async def fetch_menu_categories(
-    user_id: int, restaurant_id: Optional[int] = None
+    user_id: Optional[int] = None, restaurant_id: Optional[int] = None
 ) -> List[Restaurant]:
     return await get_menu_categories(user_id=user_id, restaurant_id=restaurant_id)
 

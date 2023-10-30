@@ -12,6 +12,7 @@ class User(Base):
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     email = Column(TEXT, unique=True, nullable=False)
     name = Column(TEXT, nullable=False)
+    dob = Column(DateTime, nullable=False)
     password = Column(TEXT, nullable=False)
     is_active = Column(BOOLEAN, default=True)
     created_at = Column(DateTime, default=func.now())

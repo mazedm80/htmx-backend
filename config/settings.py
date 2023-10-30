@@ -24,7 +24,7 @@ class API(BaseModel):
 
     host: str = "localhost"
     port: int = 3600
-    debug: bool = False
+    debug: bool = True
     workers: int = 1
 
 
