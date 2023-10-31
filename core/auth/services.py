@@ -31,15 +31,14 @@ class JWTSCHEME(HTTPBearer):
         if credentials:
             if not credentials.scheme == "Bearer":
                 raise UnauthorizedException
-            print(credentials.credentials)
-            if not self.verify(token=credentials.credentials):
+            if not self.verify(to_decode=credentials.credentials):
                 raise UnauthorizedException
             return credentials.credentials
         raise UnauthorizedException
 
-    def verify(self, token: str) -> bool:
+    def verify(self, to_decode: str) -> bool:
         try:
-            jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            jwt.decode(to_decode, SECRET_KEY, algorithms=[ALGORITHM])
         except JWTError:
             return False
         return True

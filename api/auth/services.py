@@ -14,7 +14,7 @@ async def get_access_token(email: str, password: str) -> Token:
     if not await verify_user(email=email, password=password):
         raise UnauthorizedException
     access_token = create_access_token(data={"sub": email}, expires_delta=None)
-    return Token(access_token=access_token, token_type="Bearer")
+    return Token(access_token=access_token, token_type="bearer")
 
 
 async def post_user(user: UserRegister) -> None:

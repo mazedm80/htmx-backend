@@ -38,7 +38,7 @@ class Restaurant(BaseModel):
     image: str = Field(
         description="Image of the restaurant. It must be between 3 and 50 characters.",
         min_length=3,
-        max_length=50,
+        max_length=500,
     )
 
 
