@@ -2,11 +2,7 @@ from datetime import datetime, timedelta
 from typing import Annotated, Optional
 
 from fastapi import Depends, Request
-from fastapi.security import (
-    OAuth2PasswordBearer,
-    HTTPAuthorizationCredentials,
-    HTTPBearer,
-)
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
 from core.auth.models import Permission, Token, TokenData
@@ -16,8 +12,6 @@ from core.database.services.users import get_user_permission
 SECRET_KEY = "19436de93dbb87f401018768c42104e6f1a8e7b585f660e74630b8424a6cfbe2"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 class JWTSCHEME(HTTPBearer):
@@ -51,13 +45,6 @@ def create_access_token(
     data: dict, expires_delta: Optional[timedelta]
 ) -> Annotated[str, "Create access token"]:
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    issued_at = datetime.utcnow()
-    to_encode.update({"iat": issued_at})
     try:
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     except JWTError:

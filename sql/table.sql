@@ -104,31 +104,41 @@ DROP TABLE IF EXISTS public.menu_categories;
 CREATE TABLE IF NOT EXISTS public.menu_categories
 (
     id SERIAL NOT NULL PRIMARY KEY,
-    restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
+    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     name text NOT NULL,
+    description text,
+    image text NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS menu_categories_restaurant_id_idx ON public.menu_categories USING btree (restaurant_id);
+CREATE INDEX IF NOT EXISTS menu_categories_user_id_idx ON public.menu_categories USING btree (user_id);
+
+-- Spice level Enum
+DROP TYPE IF EXISTS spice_level;
+CREATE TYPE spice_level AS ENUM ('mild', 'medium', 'hot', 'extra');
 
 -- Menu items table
 DROP TABLE IF EXISTS public.menu_items;
 CREATE TABLE IF NOT EXISTS public.menu_items
 (
     id SERIAL NOT NULL PRIMARY KEY,
-    restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
+    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     menu_category_id integer NOT NULL REFERENCES public.menu_categories(id) ON DELETE CASCADE,
     name text NOT NULL,
-    description text NOT NULL,
-    price numeric NOT NULL,
-    vegetarian boolean,
-    vegan boolean,
-    gluten_free boolean,
-    spicy boolean,
+    description text,
+    price real NOT NULL,
+    making_time real NOT NULL,
+    image text NOT NULL,
+    status boolean DEFAULT true,
+    vegetarian boolean DEFAULT false,
+    vegan boolean DEFAULT false,
+    gluten_free boolean DEFAULT false,
+    spice_level spice_level NOT NULL DEFAULT 'mild',
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS menu_items_restaurant_id_idx ON public.menu_items USING btree (restaurant_id);
+CREATE INDEX IF NOT EXISTS menu_items_user_id_idx ON public.menu_items USING btree (user_id);
+
 -- Order status Enum
 DROP TYPE IF EXISTS order_status;
 CREATE TYPE order_status AS ENUM ('pending', 'accepted', 'rejected', 'completed');

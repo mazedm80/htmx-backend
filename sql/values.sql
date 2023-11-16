@@ -32,3 +32,8 @@ VALUES
     (5, 5),
     (6, 6)
 ;
+-- dummy data for menu category
+INSERT INTO public.menu_categories 
+    (user_id, name, description, image)
+VALUES
+    (7, 'Burger', 'Beef Burger', 'https://pngfre.com/wp-content/uploads/Burger-43.png')

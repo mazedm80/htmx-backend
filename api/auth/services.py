@@ -1,12 +1,12 @@
 from api.auth.schemas import User, UserRegister
-from core.auth.models import Token
+from core.auth.models import AuthGroup, Token
 from core.auth.services import create_access_token
 from core.base.error import EmailExistsException, UnauthorizedException
 from core.database.services.users import (
-    email_exists,
-    verify_user,
     create_user,
+    email_exists,
     get_user,
+    verify_user,
 )
 
 
@@ -24,5 +24,11 @@ async def post_user(user: UserRegister) -> None:
         raise EmailExistsException
 
 
-async def fetch_user(email: str) -> User:
-    return await get_user(email=email)
+async def fetch_user(user_id: int, auth_group: AuthGroup) -> User:
+    user = await get_user(user_id=user_id)
+    return User(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        auth_group=auth_group,
+    )

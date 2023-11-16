@@ -1,8 +1,11 @@
+from typing import Dict
+
 from fastapi import APIRouter, Depends
 
 from api.auth.schemas import User, UserLogin, UserRegister, UserUpdate
-from api.auth.services import get_access_token, post_user, fetch_user
-from core.auth.models import Token
+from api.auth.services import fetch_user, get_access_token, post_user
+from core.auth.models import AuthGroup, Permission, Token, TokenData
+from core.auth.services import PermissionChecker, http_scheme
 from core.base.error import UnauthorizedException
 
 router = APIRouter(
@@ -31,11 +34,35 @@ async def register(user: UserRegister = Depends()):
 
 
 @router.get("/me", response_model=User)
-async def me(user: UserUpdate = Depends()) -> User:
-    """Update me endpoint"""
-
-    try:
-        user = await fetch_user(user)
-    except Exception:
+async def me(
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                    AuthGroup.STAFF,
+                ]
+            )
+        )
+    )
+) -> User:
+    """Get current user endpoint"""
+    if authorize.user_id:
+        user = await fetch_user(
+            user_id=authorize.user_id, auth_group=authorize.auth_group
+        )
+        return user
+    else:
         raise UnauthorizedException
-    return user
+
+
+@router.get("/verify")
+async def verify_token(token: Token = Depends(http_scheme)) -> Dict:
+    """Verify token endpoint"""
+    if token:
+        return {"message": "Token is valid"}
+    else:
+        raise UnauthorizedException

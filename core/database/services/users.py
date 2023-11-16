@@ -1,19 +1,20 @@
 from passlib.context import CryptContext
-
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert, dialect
+from sqlalchemy.dialects.postgresql import dialect, insert
 
-from api.auth.schemas import UserRegister, UserUpdate
+from api.auth.schemas import User, UserRegister, UserUpdate
 from core.auth.models import TokenData
-from core.base.error import DatabaseQueryException, DatabaseInsertException
-from core.database.orm.users import UserTB, UserPermission
+from core.base.error import DatabaseInsertException, DatabaseQueryException
+from core.database.orm.users import UserPermission, UserTB
 from core.database.postgres import PSQLHandler
-
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password, hashed_password) -> bool:
+    test = "$2b$12$6JLS9zMTqI4nKRbCoFFFHuSvOFU15pi/VKKFNQfjsSDjaBPrUknAO"
+    # print the test password decrypted
+
     return pwd_context.verify(plain_password, hashed_password)
 
 
@@ -75,10 +76,10 @@ async def create_user(user: UserRegister) -> None:
     return None
 
 
-async def get_user(email: str) -> UserTB:
-    statement = select(UserTB).where(UserTB.email == email)
+async def get_user(user_id: int) -> UserTB:
+    statement = select(UserTB).where(UserTB.id == user_id)
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
         raise DatabaseQueryException
-    return query.fetchone()[0]
+    return query.scalar()

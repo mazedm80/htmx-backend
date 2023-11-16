@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 
 from api.menu.schemas import MenuCategory, MenuCategoryList, MenuItem, MenuItemList
@@ -5,6 +7,7 @@ from api.menu.services import (
     create_menu_category,
     create_menu_item,
     fetch_menu_categories,
+    fetch_menu_category,
     fetch_menu_items,
     modify_menu_category,
     modify_menu_item,
@@ -21,9 +24,9 @@ router = APIRouter(
 )
 
 
-@router.get("/{restaurant_id}")
+@router.get("")
 async def get_menu_items(
-    restaurant_id: int,
+    menu_id: Optional[int] = None,
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -40,15 +43,14 @@ async def get_menu_items(
     if authorize.user_id:
         menu_items = await fetch_menu_items(
             user_id=authorize.user_id,
-            restaurant_id=restaurant_id,
+            menu_id=menu_id,
         )
         return MenuItemList(menu_items=menu_items)
     raise UnauthorizedException
 
 
-@router.post("/{restaurant_id}")
+@router.post("")
 async def post_menu_item(
-    restaurant_id: int,
     menu_item: MenuItem,
     authorize: TokenData = Depends(
         PermissionChecker(
@@ -66,16 +68,14 @@ async def post_menu_item(
     if authorize.user_id:
         await create_menu_item(
             user_id=authorize.user_id,
-            restaurant_id=restaurant_id,
             menu_item=menu_item,
         )
         return None
     raise UnauthorizedException
 
 
-@router.put("/{restaurant_id}")
+@router.put("")
 async def put_menu_item(
-    restaurant_id: int,
     menu_item: MenuItem,
     authorize: TokenData = Depends(
         PermissionChecker(
@@ -91,18 +91,20 @@ async def put_menu_item(
     ),
 ) -> None:
     if authorize.user_id:
-        await modify_menu_item(
-            user_id=authorize.user_id,
-            restaurant_id=restaurant_id,
-            menu_item=menu_item,
-        )
+        try:
+            await modify_menu_item(
+                user_id=authorize.user_id,
+                menu_item=menu_item,
+            )
+        except Exception as e:
+            print(e)
         return None
     raise UnauthorizedException
 
 
-@router.delete("/{restaurant_id}")
+@router.delete("/{menu_id}")
 async def delete_menu_item(
-    restaurant_id: int,
+    menu_id: int,
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -119,24 +121,21 @@ async def delete_menu_item(
     if authorize.user_id:
         await remove_menu_item(
             user_id=authorize.user_id,
-            restaurant_id=restaurant_id,
+            menu_id=menu_id,
         )
         return None
     raise UnauthorizedException
 
 
-@router.get("categories/")
+@router.get("/categories")
 async def get_menu_categories() -> MenuCategoryList:
-    menu_categories = await fetch_menu_categories(
-        user_id=None,
-        restaurant_id=None,
-    )
+    menu_categories = await fetch_menu_categories(user_id=None)
     return MenuCategoryList(menu_categories=menu_categories)
 
 
-@router.get("categories/{restaurant_id}")
-async def get_menu_categories(
-    restaurant_id: int,
+@router.get("/category/{category_id}")
+async def get_menu_category(
+    category_id: int,
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -149,19 +148,15 @@ async def get_menu_categories(
             )
         )
     ),
-) -> MenuCategoryList:
+) -> MenuCategory:
     if authorize.user_id:
-        menu_categories = await fetch_menu_categories(
-            user_id=authorize.user_id,
-            restaurant_id=restaurant_id,
-        )
-        return MenuCategoryList(menu_categories=menu_categories)
+        menu_category = await fetch_menu_category(category_id=category_id)
+        return menu_category
     raise UnauthorizedException
 
 
-@router.post("categories/{restaurant_id}")
+@router.post("/category")
 async def post_menu_category(
-    restaurant_id: int,
     menu_category: MenuCategory,
     authorize: TokenData = Depends(
         PermissionChecker(
@@ -179,16 +174,14 @@ async def post_menu_category(
     if authorize.user_id:
         await create_menu_category(
             user_id=authorize.user_id,
-            restaurant_id=restaurant_id,
             menu_category=menu_category,
         )
         return None
     raise UnauthorizedException
 
 
-@router.put("categories/{restaurant_id}")
+@router.put("/category")
 async def put_menu_category(
-    restaurant_id: int,
     menu_category: MenuCategory,
     authorize: TokenData = Depends(
         PermissionChecker(
@@ -206,16 +199,14 @@ async def put_menu_category(
     if authorize.user_id:
         await modify_menu_category(
             user_id=authorize.user_id,
-            restaurant_id=restaurant_id,
             menu_category=menu_category,
         )
         return None
     raise UnauthorizedException
 
 
-@router.delete("categories/{restaurant_id}/{menu_category_id}")
+@router.delete("/category/{category_id}")
 async def delete_menu_category(
-    restaurant_id: int,
     menu_category_id: int,
     authorize: TokenData = Depends(
         PermissionChecker(
@@ -233,7 +224,6 @@ async def delete_menu_category(
     if authorize.user_id:
         await remove_menu_category(
             user_id=authorize.user_id,
-            restaurant_id=restaurant_id,
             menu_category_id=menu_category_id,
         )
         return None
