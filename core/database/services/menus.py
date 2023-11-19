@@ -127,10 +127,10 @@ async def get_menu_items(user_id: int, menu_id: Optional[int] = None) -> List[Me
                 MenuItemTB.vegetarian,
                 MenuItemTB.vegan,
                 MenuItemTB.gluten_free,
-                MenuCategoryTB.name.lebel("menu_category_name"),
+                MenuCategoryTB.name.label("menu_category_name"),
             )
             .where(MenuItemTB.id == menu_id, MenuItemTB.user_id == user_id)
-            .join(MenuCategoryTB.id == MenuItemTB.menu_category_id)
+            .join(MenuCategoryTB)
         )
     try:
         query = await PSQLHandler().execute(statement=statement)
@@ -201,7 +201,7 @@ async def update_menu_item(user_id: int, menu_item: MenuItem) -> MenuItem:
         )
     )
     try:
-        await PSQLHandler().execute(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
         raise DatabaseInsertException
     return menu_item
@@ -212,6 +212,6 @@ async def delete_menu_item(user_id: int, menu_id: int) -> None:
         MenuItemTB.id == menu_id, MenuItemTB.user_id == user_id
     )
     try:
-        await PSQLHandler().execute(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
         raise DatabaseInsertException

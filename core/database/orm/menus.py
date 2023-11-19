@@ -40,7 +40,7 @@ class MenuItemTB(Base):
     name = Column(TEXT, nullable=False)
     description = Column(TEXT, nullable=True)
     price = Column(REAL, nullable=False)
-    making_time = Column(REAL, nullable=True)
+    making_time = Column(INTEGER, nullable=True)
     image = Column(TEXT, nullable=True)
     status = Column(BOOLEAN, default=True)
     spice_level = Column(

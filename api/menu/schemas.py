@@ -52,13 +52,16 @@ class MenuItem(BaseModel):
         description="Menu Category Name",
     )
     name: str = Field(description="Name of the menu item", min_length=3, max_length=200)
-    description: str = Field(
-        description="Description of the menu item", min_length=3, max_length=500
+    description: Optional[str] = Field(
+        default=None,
+        description="Description of the menu item",
+        min_length=3,
+        max_length=500,
     )
     price: float = Field(
         description="Price of the menu item",
     )
-    making_time: float = Field(
+    making_time: int = Field(
         description="Making time of the menu item",
     )
     image: str = Field(

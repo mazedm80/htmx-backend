@@ -102,7 +102,7 @@ async def put_menu_item(
     raise UnauthorizedException
 
 
-@router.delete("/{menu_id}")
+@router.delete("")
 async def delete_menu_item(
     menu_id: int,
     authorize: TokenData = Depends(
@@ -118,7 +118,7 @@ async def delete_menu_item(
         )
     ),
 ) -> None:
-    if authorize.user_id:
+    if authorize.user_id and menu_id:
         await remove_menu_item(
             user_id=authorize.user_id,
             menu_id=menu_id,

@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS public.menu_items
     name text NOT NULL,
     description text,
     price real NOT NULL,
-    making_time real NOT NULL,
+    making_time int NOT NULL,
     image text NOT NULL,
     status boolean DEFAULT true,
     vegetarian boolean DEFAULT false,
