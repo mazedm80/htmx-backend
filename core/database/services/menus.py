@@ -20,7 +20,7 @@ async def get_menu_categories(user_id: int) -> List[MenuCategory]:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
         raise DatabaseQueryException
-    menu_categories = query.scalars()
+    menu_categories = query.scalars().all()
     menu_categories_list = []
     for menu_category in menu_categories:
         menu_categories_list.append(
@@ -34,8 +34,8 @@ async def get_menu_categories(user_id: int) -> List[MenuCategory]:
     return menu_categories_list
 
 
-async def get_menu_category(menu_category_id: int) -> MenuCategory:
-    statement = select(MenuCategoryTB).where(MenuCategoryTB.id == menu_category_id)
+async def get_menu_category(category_id: int) -> MenuCategory:
+    statement = select(MenuCategoryTB).where(MenuCategoryTB.id == category_id)
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
@@ -57,15 +57,15 @@ async def insert_menu_category(user_id: int, menu_category: MenuCategory) -> Non
         image=menu_category.image,
     )
     try:
-        await PSQLHandler().execute(statement=statement)
+        response = await PSQLHandler().execute_commit(statement=statement)
     except Exception:
+        raise DatabaseInsertException
+    if response is None:
         raise DatabaseInsertException
     return None
 
 
-async def update_menu_category(
-    user_id: int, menu_category: MenuCategory
-) -> MenuCategory:
+async def update_menu_category(user_id: int, menu_category: MenuCategory) -> None:
     statement = (
         update(MenuCategoryTB)
         .where(MenuCategoryTB.id == menu_category.id, MenuCategoryTB.user_id == user_id)
@@ -76,19 +76,23 @@ async def update_menu_category(
         )
     )
     try:
-        await PSQLHandler().execute(statement=statement)
+        response = await PSQLHandler().execute_commit(statement=statement)
     except Exception:
         raise DatabaseInsertException
-    return menu_category
+    if response is None:
+        raise DatabaseInsertException
+    return None
 
 
-async def delete_menu_category(user_id: int, menu_category_id: int) -> None:
+async def delete_menu_category(user_id: int, category_id: int) -> None:
     statement = delete(MenuCategoryTB).where(
-        MenuCategoryTB.id == menu_category_id, MenuCategoryTB.user_id == user_id
+        MenuCategoryTB.id == category_id, MenuCategoryTB.user_id == user_id
     )
     try:
-        await PSQLHandler().execute(statement=statement)
+        response = await PSQLHandler().execute_commit(statement=statement)
     except Exception:
+        raise DatabaseInsertException
+    if response is None:
         raise DatabaseInsertException
     return None
 
@@ -134,8 +138,7 @@ async def get_menu_items(user_id: int, menu_id: Optional[int] = None) -> List[Me
         )
     try:
         query = await PSQLHandler().execute(statement=statement)
-    except Exception as e:
-        print(e)
+    except Exception:
         raise DatabaseQueryException
     menu_items = query.fetchall()
     menu_items_list = []
@@ -175,14 +178,15 @@ async def insert_menu_item(user_id: int, menu_item: MenuItem) -> None:
         gluten_free=menu_item.gluten_free,
     )
     try:
-        await PSQLHandler().execute_commit(statement=statement)
-    except Exception as e:
-        print(e)
+        response = await PSQLHandler().execute_commit(statement=statement)
+    except Exception:
+        raise DatabaseInsertException
+    if response is None:
         raise DatabaseInsertException
     return None
 
 
-async def update_menu_item(user_id: int, menu_item: MenuItem) -> MenuItem:
+async def update_menu_item(user_id: int, menu_item: MenuItem) -> None:
     statement = (
         update(MenuItemTB)
         .where(MenuItemTB.id == menu_item.id, MenuItemTB.user_id == user_id)
@@ -201,8 +205,10 @@ async def update_menu_item(user_id: int, menu_item: MenuItem) -> MenuItem:
         )
     )
     try:
-        await PSQLHandler().execute_commit(statement=statement)
+        response = await PSQLHandler().execute_commit(statement=statement)
     except Exception:
+        raise DatabaseInsertException
+    if response is None:
         raise DatabaseInsertException
     return menu_item
 
@@ -212,6 +218,8 @@ async def delete_menu_item(user_id: int, menu_id: int) -> None:
         MenuItemTB.id == menu_id, MenuItemTB.user_id == user_id
     )
     try:
-        await PSQLHandler().execute_commit(statement=statement)
+        response = await PSQLHandler().execute_commit(statement=statement)
     except Exception:
+        raise DatabaseInsertException
+    if response is None:
         raise DatabaseInsertException

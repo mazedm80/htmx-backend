@@ -34,23 +34,39 @@ async def access_permission(user_id: int, restaurant_id: int) -> bool:
 
 
 # Restaurant
-async def get_restaurant(user_id: Optional[int] = None) -> List[Restaurant]:
-    if user_id is None:
-        statement = select(RestaurantTB)
-    else:
-        statement = (
-            select(RestaurantTB)
-            .join(
-                RestaurantAccessTB,
-                RestaurantAccessTB.restaurant_id == RestaurantTB.id,
-            )
-            .where(RestaurantAccessTB.user_id == user_id)
+async def get_restaurant(
+    user_id: int, restaurant_id: Optional[int]
+) -> List[Restaurant]:
+    if restaurant_id is None:
+        restaurant_id = select(RestaurantAccessTB.restaurant_id).where(
+            RestaurantAccessTB.user_id == user_id
         )
+        statement = select(
+            RestaurantTB.id,
+            RestaurantTB.name,
+            RestaurantTB.address,
+            RestaurantTB.phone,
+            RestaurantTB.email,
+            RestaurantTB.website,
+            RestaurantTB.image,
+        ).filter(RestaurantTB.id.in_(restaurant_id))
+    else:
+        if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
+            raise UnauthorizedException
+        statement = select(
+            RestaurantTB.id,
+            RestaurantTB.name,
+            RestaurantTB.address,
+            RestaurantTB.phone,
+            RestaurantTB.email,
+            RestaurantTB.website,
+            RestaurantTB.image,
+        ).filter(RestaurantTB.id == restaurant_id)
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
         raise DatabaseQueryException
-    restaurants = query.scalars()
+    restaurants = query.fetchall()
     restaurants_list = []
     for restaurant in restaurants:
         restaurants_list.append(
@@ -86,20 +102,20 @@ async def insert_restaurant(restaurant: Restaurant, user_id: int) -> None:
         user_id=user_id, restaurant_id=response.inserted_primary_key[0]
     )
     try:
-        await PSQLHandler().execute_commit(statement=statement)
+        response = await PSQLHandler().execute_commit(statement=statement)
     except Exception:
+        raise DatabaseInsertException
+    if response is None:
         raise DatabaseInsertException
     return None
 
 
-async def update_restaurant(
-    restaurant: Restaurant, restaurant_id: int, user_id: int
-) -> Restaurant:
-    if not await access_permission(user_id=user_id, restaurant_id=restaurant_id):
+async def update_restaurant(restaurant: Restaurant, user_id: int) -> None:
+    if not await access_permission(user_id=user_id, restaurant_id=restaurant.id):
         raise UnauthorizedException
     statement = (
         update(RestaurantTB)
-        .where(RestaurantTB.id == restaurant_id)
+        .where(RestaurantTB.id == restaurant.id)
         .values(
             name=restaurant.name,
             address=restaurant.address,
@@ -115,24 +131,7 @@ async def update_restaurant(
         raise DatabaseInsertException
     if response is None:
         raise DatabaseInsertException
-    statement = select(RestaurantTB).where(RestaurantTB.id == restaurant_id)
-    try:
-        query = await PSQLHandler().execute(statement=statement)
-    except Exception:
-        raise DatabaseQueryException
-    restaurant = query.scalar()
-    if restaurant is None:
-        raise DatabaseQueryException
-
-    return Restaurant(
-        id=restaurant.id,
-        name=restaurant.name,
-        address=restaurant.address,
-        phone=restaurant.phone,
-        email=restaurant.email,
-        website=restaurant.website,
-        image=restaurant.image,
-    )
+    return None
 
 
 async def delete_restaurant(restaurant_id: int, user_id: int) -> None:
@@ -144,8 +143,10 @@ async def delete_restaurant(restaurant_id: int, user_id: int) -> None:
         .returning(RestaurantTB.id)
     )
     try:
-        await PSQLHandler().execute_commit(statement=statement)
+        response = await PSQLHandler().execute_commit(statement=statement)
     except Exception:
+        raise DatabaseInsertException
+    if response is None:
         raise DatabaseInsertException
     return None
 

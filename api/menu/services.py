@@ -31,8 +31,8 @@ async def modify_menu_category(user_id: int, menu_category: MenuCategory) -> Non
     await update_menu_category(user_id=user_id, menu_category=menu_category)
 
 
-async def remove_menu_category(user_id: int, menu_category_id: int) -> None:
-    await delete_menu_category(user_id=user_id, menu_category_id=menu_category_id)
+async def remove_menu_category(user_id: int, category_id: int) -> None:
+    await delete_menu_category(user_id=user_id, category_id=category_id)
 
 
 # Menu Item Services

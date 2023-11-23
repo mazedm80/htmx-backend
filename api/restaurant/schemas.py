@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class Restaurant(BaseModel):
     """Restaurant model."""
 
-    id: int = Field(
+    id: Optional[int] = Field(
         description="Id of the restaurant. It is not required for creation.",
         default=None,
     )
@@ -18,24 +18,24 @@ class Restaurant(BaseModel):
     address: str = Field(
         description="Address of the restaurant. It must be between 3 and 50 characters.",
         min_length=3,
-        max_length=50,
+        max_length=500,
     )
     phone: str = Field(
         description="Phone of the restaurant. It must be between 3 and 50 characters.",
         min_length=3,
         max_length=50,
     )
-    email: str = Field(
+    email: Optional[str] = Field(
         description="Email of the restaurant. It must be between 3 and 50 characters.",
         min_length=3,
         max_length=50,
     )
-    website: str = Field(
+    website: Optional[str] = Field(
         description="Website of the restaurant. It must be between 3 and 50 characters.",
         min_length=3,
         max_length=50,
     )
-    image: str = Field(
+    image: Optional[str] = Field(
         description="Image of the restaurant. It must be between 3 and 50 characters.",
         min_length=3,
         max_length=500,

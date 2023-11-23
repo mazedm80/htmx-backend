@@ -17,6 +17,7 @@ class MenuCategory(BaseModel):
     """Menu Category model."""
 
     id: Optional[int] = Field(
+        default=None,
         description="Menu Category ID. It is not required for creation.",
     )
     name: str = Field(

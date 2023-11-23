@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 
 from api.restaurant.schemas import Restaurant, RestaurantsList, Table, TablesList
@@ -21,8 +23,9 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("")
 async def get_restaurants(
+    restaurant_id: Optional[int] = None,
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -36,23 +39,15 @@ async def get_restaurants(
         )
     ),
 ) -> RestaurantsList:
-    user_id = authorize.user_id
-    if (
-        authorize.auth_group == AuthGroup.SUPER_ADMIN
-        or authorize.auth_group == AuthGroup.ADMIN
-    ):
-        restaurants = await fetch_restaurant(user_id=None)
-        return RestaurantsList(restaurants=restaurants)
-    elif (
-        authorize.auth_group == AuthGroup.OWNER
-        or authorize.auth_group == AuthGroup.MANAGER
-    ):
-        restaurants = await fetch_restaurant(user_id=user_id)
+    if authorize.user_id:
+        restaurants = await fetch_restaurant(
+            user_id=authorize.user_id, restaurant_id=restaurant_id
+        )
         return RestaurantsList(restaurants=restaurants)
     raise UnauthorizedException
 
 
-@router.post("/")
+@router.post("")
 async def post_restaurant(
     restaurant: Restaurant,
     authorize: TokenData = Depends(
@@ -67,16 +62,15 @@ async def post_restaurant(
             )
         )
     ),
-):
+) -> None:
     if authorize.user_id:
         await create_restaurant(restaurant=restaurant, user_id=authorize.user_id)
-        return {"message": "Restaurant created successfully"}
+        return None
     raise UnauthorizedException
 
 
-@router.put("/{restaurant_id}")
+@router.put("")
 async def put_restaurant(
-    restaurant_id: int,
     restaurant: Restaurant,
     authorize: TokenData = Depends(
         PermissionChecker(
@@ -90,18 +84,17 @@ async def put_restaurant(
             )
         )
     ),
-) -> Restaurant:
+) -> None:
     if authorize.user_id:
         restaurant = await modify_restaurant(
-            restaurant_id=restaurant_id,
             restaurant=restaurant,
             user_id=authorize.user_id,
         )
-        return restaurant
+        return None
     raise UnauthorizedException
 
 
-@router.delete("/{restaurant_id}")
+@router.delete("")
 async def delete_restaurant(
     restaurant_id: int,
     authorize: TokenData = Depends(

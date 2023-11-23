@@ -13,8 +13,10 @@ from core.database.services.restaurants import (
 )
 
 
-async def fetch_restaurant(user_id: Optional[int]) -> List[Restaurant]:
-    restaurants = await get_restaurant(user_id=user_id)
+async def fetch_restaurant(
+    user_id: int, restaurant_id: Optional[int]
+) -> List[Restaurant]:
+    restaurants = await get_restaurant(user_id=user_id, restaurant_id=restaurant_id)
     return restaurants
 
 
@@ -22,12 +24,8 @@ async def create_restaurant(restaurant: Restaurant, user_id: int) -> None:
     restaurant = await insert_restaurant(restaurant=restaurant, user_id=user_id)
 
 
-async def modify_restaurant(
-    restaurant: Restaurant, restaurant_id: int, user_id: int
-) -> Restaurant:
-    restaurant = await update_restaurant(
-        restaurant=restaurant, restaurant_id=restaurant_id, user_id=user_id
-    )
+async def modify_restaurant(restaurant: Restaurant, user_id: int) -> None:
+    restaurant = await update_restaurant(restaurant=restaurant, user_id=user_id)
     return restaurant
 
 
@@ -44,7 +42,7 @@ async def create_table(table: Table, restaurant_id: int, user_id: int) -> None:
     await insert_table(table=table, restaurant_id=restaurant_id, user_id=user_id)
 
 
-async def modify_table(table: Table, restaurant_id: int, user_id: int) -> Table:
+async def modify_table(table: Table, restaurant_id: int, user_id: int) -> None:
     table = await update_table(
         table=table, restaurant_id=restaurant_id, user_id=user_id
     )

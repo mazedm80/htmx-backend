@@ -133,9 +133,9 @@ async def get_menu_categories() -> MenuCategoryList:
     return MenuCategoryList(menu_categories=menu_categories)
 
 
-@router.get("/category/{category_id}")
+@router.get("/category")
 async def get_menu_category(
-    category_id: int,
+    category_id: Optional[int],
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -205,9 +205,9 @@ async def put_menu_category(
     raise UnauthorizedException
 
 
-@router.delete("/category/{category_id}")
+@router.delete("/category")
 async def delete_menu_category(
-    menu_category_id: int,
+    category_id: int,
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -224,7 +224,7 @@ async def delete_menu_category(
     if authorize.user_id:
         await remove_menu_category(
             user_id=authorize.user_id,
-            menu_category_id=menu_category_id,
+            category_id=category_id,
         )
         return None
     raise UnauthorizedException
