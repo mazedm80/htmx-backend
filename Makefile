@@ -54,8 +54,8 @@ docker-run: ## Run docker image
 	@docker run \
 	--name pyhtmx \
 	--restart always \
-	-p 8000:80 \
-	-e MAX_WORKERS=2 \
+	-p 5000:80 \
+	-e MAX_WORKERS=1 \
 	-e PSQL__HOST="mirserver" \
 	-e PSQL__PORT=5432 \
 	-e PSQL__USER="htmx" \

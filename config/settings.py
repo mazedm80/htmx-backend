@@ -23,7 +23,7 @@ class API(BaseModel):
     """Schema for configuring API parameters."""
 
     host: str = "localhost"
-    port: int = 3600
+    port: int = 5000
     debug: bool = True
     workers: int = 1
 
