@@ -36,8 +36,12 @@ async def remove_menu_category(user_id: int, category_id: int) -> None:
 
 
 # Menu Item Services
-async def fetch_menu_items(user_id: int, menu_id: Optional[int] = None) -> MenuItemList:
-    return await get_menu_items(user_id=user_id, menu_id=menu_id)
+async def fetch_menu_items(
+    user_id: int, menu_id: Optional[int] = None, category_id: Optional[int] = None
+) -> MenuItemList:
+    return await get_menu_items(
+        user_id=user_id, menu_id=menu_id, category_id=category_id
+    )
 
 
 async def create_menu_item(user_id: int, menu_item: MenuItem) -> None:

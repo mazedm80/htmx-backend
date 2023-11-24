@@ -108,10 +108,9 @@ async def delete_restaurant(
             )
         )
     ),
-):
+) -> None:
     if authorize.user_id:
         await remove_restaurant(restaurant_id=restaurant_id, user_id=authorize.user_id)
-        return {"message": "Restaurant deleted successfully"}
     raise UnauthorizedException
 
 

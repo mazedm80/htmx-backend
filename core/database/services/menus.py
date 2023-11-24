@@ -97,12 +97,15 @@ async def delete_menu_category(user_id: int, category_id: int) -> None:
     return None
 
 
-async def get_menu_items(user_id: int, menu_id: Optional[int] = None) -> List[MenuItem]:
-    if menu_id is None:
+async def get_menu_items(
+    user_id: int, menu_id: Optional[int] = None, category_id: Optional[int] = None
+) -> List[MenuItem]:
+    if menu_id is None and category_id is None:
         statement = (
             select(
                 MenuItemTB.id,
                 MenuItemTB.name,
+                MenuItemTB.menu_category_id,
                 MenuItemTB.description,
                 MenuItemTB.price,
                 MenuItemTB.making_time,
@@ -117,11 +120,35 @@ async def get_menu_items(user_id: int, menu_id: Optional[int] = None) -> List[Me
             .where(MenuItemTB.user_id == user_id)
             .join(MenuCategoryTB)
         )
+    elif category_id is not None:
+        statement = (
+            select(
+                MenuItemTB.id,
+                MenuItemTB.name,
+                MenuItemTB.menu_category_id,
+                MenuItemTB.description,
+                MenuItemTB.price,
+                MenuItemTB.making_time,
+                MenuItemTB.image,
+                MenuItemTB.status,
+                MenuItemTB.spice_level,
+                MenuItemTB.vegetarian,
+                MenuItemTB.vegan,
+                MenuItemTB.gluten_free,
+                MenuCategoryTB.name.label("menu_category_name"),
+            )
+            .where(
+                MenuItemTB.menu_category_id == category_id,
+                MenuItemTB.user_id == user_id,
+            )
+            .join(MenuCategoryTB)
+        )
     else:
         statement = (
             select(
                 MenuItemTB.id,
                 MenuItemTB.name,
+                MenuItemTB.menu_category_id,
                 MenuItemTB.description,
                 MenuItemTB.price,
                 MenuItemTB.making_time,
@@ -146,6 +173,7 @@ async def get_menu_items(user_id: int, menu_id: Optional[int] = None) -> List[Me
         menu_items_list.append(
             MenuItem(
                 id=menu_item.id,
+                menu_category_id=menu_item.menu_category_id,
                 menu_category_name=menu_item.menu_category_name,
                 name=menu_item.name,
                 description=menu_item.description,

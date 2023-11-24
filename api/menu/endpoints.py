@@ -27,6 +27,7 @@ router = APIRouter(
 @router.get("")
 async def get_menu_items(
     menu_id: Optional[int] = None,
+    category_id: Optional[int] = None,
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -44,6 +45,7 @@ async def get_menu_items(
         menu_items = await fetch_menu_items(
             user_id=authorize.user_id,
             menu_id=menu_id,
+            category_id=category_id,
         )
         return MenuItemList(menu_items=menu_items)
     raise UnauthorizedException
