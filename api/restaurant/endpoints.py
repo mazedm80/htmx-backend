@@ -90,7 +90,6 @@ async def put_restaurant(
             restaurant=restaurant,
             user_id=authorize.user_id,
         )
-        return None
     raise UnauthorizedException
 
 
