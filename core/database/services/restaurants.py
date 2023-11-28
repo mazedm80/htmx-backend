@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, func
 from sqlalchemy.dialects.postgresql import insert
 
 from api.restaurant.schemas import Restaurant, Table
@@ -102,10 +102,8 @@ async def insert_restaurant(restaurant: Restaurant, user_id: int) -> None:
         user_id=user_id, restaurant_id=response.inserted_primary_key[0]
     )
     try:
-        response = await PSQLHandler().execute_commit(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
-        raise DatabaseInsertException
-    if response is None:
         raise DatabaseInsertException
     return None
 
@@ -123,13 +121,12 @@ async def update_restaurant(restaurant: Restaurant, user_id: int) -> None:
             email=restaurant.email,
             website=restaurant.website,
             image=restaurant.image,
+            updated_at=func.now(),
         )
     )
     try:
-        response = await PSQLHandler().execute_commit(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
-        raise DatabaseInsertException
-    if response is None:
         raise DatabaseInsertException
     return None
 

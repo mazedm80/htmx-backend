@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from api.menu.schemas import MenuCategory, MenuCategoryList, MenuItem, MenuItemList
+from api.menu.schemas import MenuCategory, MenuItem
 from core.database.services.menus import (
     delete_menu_category,
     delete_menu_item,
@@ -15,11 +15,11 @@ from core.database.services.menus import (
 
 
 # Menu Category Services
-async def fetch_menu_categories(user_id: Optional[int] = None) -> MenuCategoryList:
+async def fetch_menu_categories(user_id: Optional[int] = None) -> List[MenuCategory]:
     return await get_menu_categories(user_id=user_id)
 
 
-async def fetch_menu_category(category_id: int) -> MenuCategoryList:
+async def fetch_menu_category(category_id: int) -> MenuCategory:
     return await get_menu_category(category_id=category_id)
 
 
@@ -38,7 +38,7 @@ async def remove_menu_category(user_id: int, category_id: int) -> None:
 # Menu Item Services
 async def fetch_menu_items(
     user_id: int, menu_id: Optional[int] = None, category_id: Optional[int] = None
-) -> MenuItemList:
+) -> List[MenuItem]:
     return await get_menu_items(
         user_id=user_id, menu_id=menu_id, category_id=category_id
     )

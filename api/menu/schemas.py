@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -29,12 +29,6 @@ class MenuCategory(BaseModel):
     image: str = Field(
         description="Image of the menu category",
     )
-
-
-class MenuCategoryList(BaseModel):
-    """Menu Category List model."""
-
-    menu_categories: List[MenuCategory]
 
 
 class MenuItem(BaseModel):
@@ -83,9 +77,3 @@ class MenuItem(BaseModel):
     gluten_free: bool = Field(
         description="Is the menu item gluten free",
     )
-
-
-class MenuItemList(BaseModel):
-    """Menu Item List model."""
-
-    menu_items: List[MenuItem]

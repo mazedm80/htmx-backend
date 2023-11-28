@@ -142,15 +142,45 @@ CREATE INDEX IF NOT EXISTS menu_items_user_id_idx ON public.menu_items USING btr
 -- Order status Enum
 DROP TYPE IF EXISTS order_status;
 CREATE TYPE order_status AS ENUM ('pending', 'accepted', 'rejected', 'completed');
--- Order table
-DROP TABLE IF EXISTS public.orders;
-CREATE TABLE IF NOT EXISTS public.orders
+
+-- Order type Enum
+DROP TYPE IF EXISTS order_type;
+CREATE TYPE order_type AS ENUM ('dine_in', 'take_away', 'delivery');
+
+-- payment status Enum
+DROP TYPE IF EXISTS payment_status;
+CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'cancelled');
+
+-- Order details table
+DROP TABLE IF EXISTS public.order_details;
+CREATE TABLE IF NOT EXISTS public.order_details
 (
-    id SERIAL NOT NULL PRIMARY KEY,
-    
+    order_id text NOT NULL PRIMARY KEY,
+    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
     table_number integer NOT NULL,
     status order_status NOT NULL DEFAULT 'pending',
+    order_type order_type NOT NULL DEFAULT 'dine_in',
+    payment_status payment_status NOT NULL DEFAULT 'pending',
+    total_amount real NOT NULL,
+    coupon_code text,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS order_details_user_id_idx ON public.order_details USING btree (user_id);
+CREATE INDEX IF NOT EXISTS order_details_restaurant_id_idx ON public.order_details USING btree (restaurant_id);
+CREATE INDEX IF NOT EXISTS order_details_order_id_idx ON public.order_details USING btree (order_id);
+
+-- Order items table
+DROP TABLE IF EXISTS public.order_items;
+CREATE TABLE IF NOT EXISTS public.order_items
+(
+    id SERIAL NOT NULL PRIMARY KEY,
+    order_id text NOT NULL REFERENCES public.order_details(order_id) ON DELETE CASCADE,
+    menu_item_id integer NOT NULL REFERENCES public.menu_items(id) ON DELETE CASCADE,
+    quantity integer NOT NULL,
+    price real NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS order_items_order_id_idx ON public.order_items USING btree (order_id);

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, func
 from sqlalchemy.dialects.postgresql import insert
 
 from api.menu.schemas import MenuCategory, MenuItem
@@ -57,10 +57,8 @@ async def insert_menu_category(user_id: int, menu_category: MenuCategory) -> Non
         image=menu_category.image,
     )
     try:
-        response = await PSQLHandler().execute_commit(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
-        raise DatabaseInsertException
-    if response is None:
         raise DatabaseInsertException
     return None
 
@@ -73,13 +71,12 @@ async def update_menu_category(user_id: int, menu_category: MenuCategory) -> Non
             name=menu_category.name,
             description=menu_category.description,
             image=menu_category.image,
+            updated_at=func.now(),
         )
     )
     try:
-        response = await PSQLHandler().execute_commit(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
-        raise DatabaseInsertException
-    if response is None:
         raise DatabaseInsertException
     return None
 
@@ -117,8 +114,8 @@ async def get_menu_items(
                 MenuItemTB.gluten_free,
                 MenuCategoryTB.name.label("menu_category_name"),
             )
-            .where(MenuItemTB.user_id == user_id)
             .join(MenuCategoryTB)
+            .where(MenuItemTB.user_id == user_id)
         )
     elif category_id is not None:
         statement = (
@@ -137,11 +134,11 @@ async def get_menu_items(
                 MenuItemTB.gluten_free,
                 MenuCategoryTB.name.label("menu_category_name"),
             )
+            .join(MenuCategoryTB)
             .where(
                 MenuItemTB.menu_category_id == category_id,
                 MenuItemTB.user_id == user_id,
             )
-            .join(MenuCategoryTB)
         )
     else:
         statement = (
@@ -160,8 +157,8 @@ async def get_menu_items(
                 MenuItemTB.gluten_free,
                 MenuCategoryTB.name.label("menu_category_name"),
             )
-            .where(MenuItemTB.id == menu_id, MenuItemTB.user_id == user_id)
             .join(MenuCategoryTB)
+            .where(MenuItemTB.id == menu_id, MenuItemTB.user_id == user_id)
         )
     try:
         query = await PSQLHandler().execute(statement=statement)
@@ -206,10 +203,8 @@ async def insert_menu_item(user_id: int, menu_item: MenuItem) -> None:
         gluten_free=menu_item.gluten_free,
     )
     try:
-        response = await PSQLHandler().execute_commit(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
-        raise DatabaseInsertException
-    if response is None:
         raise DatabaseInsertException
     return None
 
@@ -230,15 +225,13 @@ async def update_menu_item(user_id: int, menu_item: MenuItem) -> None:
             vegetarian=menu_item.vegetarian,
             vegan=menu_item.vegan,
             gluten_free=menu_item.gluten_free,
+            updated_at=func.now(),
         )
     )
     try:
-        response = await PSQLHandler().execute_commit(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
         raise DatabaseInsertException
-    if response is None:
-        raise DatabaseInsertException
-    return menu_item
 
 
 async def delete_menu_item(user_id: int, menu_id: int) -> None:
@@ -246,8 +239,6 @@ async def delete_menu_item(user_id: int, menu_id: int) -> None:
         MenuItemTB.id == menu_id, MenuItemTB.user_id == user_id
     )
     try:
-        response = await PSQLHandler().execute_commit(statement=statement)
+        await PSQLHandler().execute_commit(statement=statement)
     except Exception:
-        raise DatabaseInsertException
-    if response is None:
         raise DatabaseInsertException

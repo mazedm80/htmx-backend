@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, Depends
 
-from api.menu.schemas import MenuCategory, MenuCategoryList, MenuItem, MenuItemList
+from api.menu.schemas import MenuCategory, MenuItem
 from api.menu.services import (
     create_menu_category,
     create_menu_item,
@@ -40,14 +40,14 @@ async def get_menu_items(
             )
         )
     ),
-) -> MenuItemList:
+) -> List[MenuItem]:
     if authorize.user_id:
         menu_items = await fetch_menu_items(
             user_id=authorize.user_id,
             menu_id=menu_id,
             category_id=category_id,
         )
-        return MenuItemList(menu_items=menu_items)
+        return menu_items
     raise UnauthorizedException
 
 
@@ -130,9 +130,9 @@ async def delete_menu_item(
 
 
 @router.get("/categories")
-async def get_menu_categories() -> MenuCategoryList:
+async def get_menu_categories() -> List[MenuCategory]:
     menu_categories = await fetch_menu_categories(user_id=None)
-    return MenuCategoryList(menu_categories=menu_categories)
+    return menu_categories
 
 
 @router.get("/category")

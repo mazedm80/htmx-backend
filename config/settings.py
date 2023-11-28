@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class PSQL(BaseModel):
@@ -29,15 +29,16 @@ class API(BaseModel):
 
 
 class Settings(BaseSettings):
-    """A class containing all the configuration parameters for the application."""
+    """Schema for configuring API parameters."""
 
     api: API = API()
     psql: PSQL = PSQL()
 
-    class Config:
-        env_nested_delimiter = "__"
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_nested_delimiter="__",
+        env_file=".env",
+        env_file_encoding="utf-8",
+    )
 
 
 settings = Settings()
