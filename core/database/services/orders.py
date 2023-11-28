@@ -94,7 +94,8 @@ async def insert_order(restaurant_id: int, order: Order) -> str:
     )
     try:
         response = await PSQLHandler().execute_commit(statement=statement)
-    except Exception:
+    except Exception as e:
+        print(e)
         raise DatabaseInsertException
     if response is None:
         raise DatabaseInsertException
@@ -155,9 +156,9 @@ async def get_order_details(order_id: str) -> List[OrderDetail]:
     return order_details_list
 
 
-async def insert_order_detail(order_detail: OrderDetail) -> None:
+async def insert_order_detail(order_id: str, order_detail: OrderDetail) -> None:
     statement = insert(OrderDetailTB).values(
-        order_id=order_detail.order_id,
+        order_id=order_id,
         menu_item_id=order_detail.menu_item_id,
         quantity=order_detail.quantity,
         price=order_detail.price,

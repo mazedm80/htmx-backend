@@ -14,7 +14,7 @@ from core.database import Base
 
 
 class OrderTB(Base):
-    __tablename__ = "orders"
+    __tablename__ = "order_details"
 
     order_id = Column(TEXT, primary_key=True, index=True)
     user_id = Column(
@@ -62,7 +62,7 @@ class OrderTB(Base):
 
 
 class OrderDetailTB(Base):
-    __tablename__ = "order_details"
+    __tablename__ = "order_items"
 
     id = Column(INTEGER, primary_key=True, index=True)
     order_id = Column(TEXT, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False)

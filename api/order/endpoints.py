@@ -57,7 +57,6 @@ async def get_order(
                     AuthGroup.ADMIN,
                     AuthGroup.OWNER,
                     AuthGroup.MANAGER,
-                    AuthGroup.WAITER,
                 ]
             )
         )
@@ -73,7 +72,6 @@ async def get_order(
 async def post_order(
     restaurant_id: int,
     order: Order,
-    order_details: List[OrderDetail],
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -86,15 +84,10 @@ async def post_order(
             )
         )
     ),
-) -> None:
+) -> str:
     if authorize.user_id:
         order_id = await create_order(restaurant_id=restaurant_id, order=order)
-        try:
-            for order_detail in order_details:
-                await create_order_detail(order_id=order_id, order_detail=order_detail)
-        except Exception as e:
-            print(e)
-        return None
+        return order_id
     raise UnauthorizedException
 
 
@@ -111,7 +104,6 @@ async def put_order(
                     AuthGroup.ADMIN,
                     AuthGroup.OWNER,
                     AuthGroup.MANAGER,
-                    AuthGroup.WAITER,
                 ]
             )
         )
@@ -165,7 +157,6 @@ async def get_order_details(
                     AuthGroup.ADMIN,
                     AuthGroup.OWNER,
                     AuthGroup.MANAGER,
-                    AuthGroup.WAITER,
                 ]
             )
         )
@@ -174,4 +165,28 @@ async def get_order_details(
     if authorize.user_id:
         order_details = await fetch_order_details(order_id=order_id)
         return order_details
+    raise UnauthorizedException
+
+
+@router.post("/order_details")
+async def post_order_detail(
+    order_id: str,
+    order_detail: List[OrderDetail],
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> None:
+    if authorize.user_id:
+        for detail in order_detail:
+            await create_order_detail(order_id=order_id, order_detail=detail)
+        return None
     raise UnauthorizedException

@@ -25,6 +25,7 @@ async def fetch_order(order_id: str) -> Order:
 
 async def create_order(restaurant_id: int, order: Order) -> str:
     order_id = await insert_order(restaurant_id=restaurant_id, order=order)
+    return order_id
 
 
 async def update_order(order_id: str, order: Order) -> None:

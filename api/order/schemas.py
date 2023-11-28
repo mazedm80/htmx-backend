@@ -26,9 +26,8 @@ class PaymentStatus(str, Enum):
 
 
 class Order(BaseModel):
-    order_id = str = Field(description="Order ID")
+    order_id: str = Field(description="Order ID")
     user_id: Optional[int] = Field(default=None, description="User ID")
-    restaurant_id: Optional[int] = Field(default=None, description="Restaurant ID")
     table_number: Optional[int] = Field(default=None, description="Table Number")
     status: OrderStatus = Field(description="Order Status")
     order_type: OrderType = Field(description="Order Type")
@@ -36,12 +35,12 @@ class Order(BaseModel):
     total_amount: float = Field(description="Total Amount")
     coupon_code: Optional[str] = Field(None, title="Coupon Code")
     note: Optional[str] = Field(None, title="Note")
-    time: datetime = Field(description="Time")
+    # time: Optional[datetime] = Field(description="Time")
 
 
 class OrderDetail(BaseModel):
-    order_id: str = Field(description="Order ID")
-    menu_item_id: Optional[int] = Field(default=None, description="Menu Item ID")
+    order_id: Optional[str] = Field(default=None, description="Order ID")
+    menu_item_id: int = Field(description="Menu Item ID")
     name: Optional[str] = Field(default=None, description="Name of the menu item")
     quantity: int = Field(description="Quantity")
     price: float = Field(description="Price")
