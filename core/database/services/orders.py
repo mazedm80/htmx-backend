@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy import delete, select, update, func
 from sqlalchemy.dialects.postgresql import insert
 
-from api.order.schemas import Order, OrderDetail
+from api.order.schemas import Order, OrderDetail, OrderStatus
 from core.base.error import DatabaseInsertException, DatabaseQueryException
 from core.database.orm.menus import MenuItemTB
 from core.database.orm.orders import OrderTB, OrderDetailTB
@@ -22,7 +22,7 @@ async def get_orders(restaurant_id: int, hours: Optional[int] = None) -> List[Or
                 >= func.now()
                 - func.make_interval(
                     0, 0, 0, 0, 24
-                ),  # years, months, days, hours, minutes, seconds
+                ),  # years, months, weeks, days, hours
             )
         )
 
@@ -33,8 +33,42 @@ async def get_orders(restaurant_id: int, hours: Optional[int] = None) -> List[Or
             >= func.now()
             - func.make_interval(
                 0, 0, 0, 0, hours
-            ),  # years, months, days, hours, minutes, seconds
+            ),  # years, months, weeks, days, hours
         )
+    try:
+        query = await PSQLHandler().execute(statement=statement)
+    except Exception:
+        raise DatabaseQueryException
+    orders = query.scalars().all()
+    orders_list = []
+    for order in orders:
+        orders_list.append(
+            Order(
+                order_id=order.order_id,
+                user_id=order.user_id,
+                restaurant_id=order.restaurant_id,
+                table_number=order.table_number,
+                status=order.status,
+                order_type=order.order_type,
+                payment_status=order.payment_status,
+                total_amount=order.total_amount,
+                coupon_code=order.coupon_code,
+                time=order.updated_at,
+            )
+        )
+    return orders_list
+
+
+async def get_orders_by_status(restaurant_id: int, status: OrderStatus) -> List[Order]:
+    statement = select(OrderTB).where(
+        OrderTB.restaurant_id == restaurant_id,
+        OrderTB.status == status,
+        OrderTB.created_at
+        >= func.now()
+        - func.make_interval(
+            0, 0, 0, 20, 24
+        ),  # years, months, weeks, days, hours (20 days)
+    )
     try:
         query = await PSQLHandler().execute(statement=statement)
     except Exception:
@@ -132,8 +166,11 @@ async def delete_order(order_id: str) -> None:
 async def get_order_details(order_id: str) -> List[OrderDetail]:
     statement = (
         select(
-            OrderDetailTB,
+            OrderDetailTB.order_id,
+            OrderDetailTB.menu_item_id,
             MenuItemTB.name,
+            OrderDetailTB.quantity,
+            OrderDetailTB.price,
         )
         .join(MenuItemTB, OrderDetailTB.menu_item_id == MenuItemTB.id)
         .where(OrderDetailTB.order_id == order_id)
@@ -148,6 +185,7 @@ async def get_order_details(order_id: str) -> List[OrderDetail]:
         order_details_list.append(
             OrderDetail(
                 order_id=order_detail.order_id,
+                menu_item_id=order_detail.menu_item_id,
                 name=order_detail.name,
                 quantity=order_detail.quantity,
                 price=order_detail.price,

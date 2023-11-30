@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from api.order.schemas import Order, OrderDetail
+from api.order.schemas import Order, OrderDetail, OrderStatus
 from core.database.services.orders import (
     get_orders,
     get_order,
@@ -10,11 +10,19 @@ from core.database.services.orders import (
     get_order_details,
     insert_order_detail,
     delete_order_details,
+    get_orders_by_status,
 )
 
 
 async def fetch_orders(restaurant_id: int, hours: Optional[int] = None) -> List[Order]:
     orders = await get_orders(restaurant_id=restaurant_id, hours=hours)
+    return orders
+
+
+async def fetch_orders_by_status(
+    restaurant_id: int, status: OrderStatus
+) -> List[Order]:
+    orders = await get_orders_by_status(restaurant_id=restaurant_id, status=status)
     return orders
 
 

@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends
 
-from api.order.schemas import Order, OrderDetail
+from api.order.schemas import Order, OrderDetail, OrderStatus
 from api.order.services import (
     fetch_orders,
     fetch_order,
@@ -12,6 +12,7 @@ from api.order.services import (
     fetch_order_details,
     create_order_detail,
     remove_order_details,
+    fetch_orders_by_status,
 )
 from core.auth.models import AuthGroup, Permission, TokenData
 from core.auth.services import PermissionChecker
@@ -46,7 +47,32 @@ async def get_orders(
     raise UnauthorizedException
 
 
-@router.get("/detail")
+@router.get("/by_status")
+async def get_orders_by_status(
+    restaurant_id: int,
+    status: OrderStatus,
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> List[Order]:
+    if authorize.user_id:
+        orders = await fetch_orders_by_status(
+            restaurant_id=restaurant_id, status=status
+        )
+        return orders
+    raise UnauthorizedException
+
+
+@router.get("/details")
 async def get_order(
     order_id: str,
     authorize: TokenData = Depends(

@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class OrderStatus(str, Enum):
@@ -33,9 +33,9 @@ class Order(BaseModel):
     order_type: OrderType = Field(description="Order Type")
     payment_status: PaymentStatus = Field(description="Payment Status")
     total_amount: float = Field(description="Total Amount")
-    coupon_code: Optional[str] = Field(None, title="Coupon Code")
-    note: Optional[str] = Field(None, title="Note")
-    # time: Optional[datetime] = Field(description="Time")
+    coupon_code: Optional[str] = Field(default=None, title="Coupon Code")
+    note: Optional[str] = Field(default=None, title="Note")
+    time: Optional[datetime] = Field(default=None, description="Time")
 
 
 class OrderDetail(BaseModel):
