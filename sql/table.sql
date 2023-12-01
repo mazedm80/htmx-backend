@@ -141,7 +141,7 @@ CREATE INDEX IF NOT EXISTS menu_items_user_id_idx ON public.menu_items USING btr
 
 -- Order status Enum
 DROP TYPE IF EXISTS order_status;
-CREATE TYPE order_status AS ENUM ('pending', 'accepted', 'rejected', 'completed');
+CREATE TYPE order_status AS ENUM ('pending', 'accepted', 'prepared', 'completed');
 
 -- Order type Enum
 DROP TYPE IF EXISTS order_type;
@@ -156,7 +156,6 @@ DROP TABLE IF EXISTS public.order_details;
 CREATE TABLE IF NOT EXISTS public.order_details
 (
     order_id text NOT NULL PRIMARY KEY,
-    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     restaurant_id integer NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
     table_number integer NOT NULL,
     status order_status NOT NULL DEFAULT 'pending',
@@ -167,7 +166,6 @@ CREATE TABLE IF NOT EXISTS public.order_details
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS order_details_user_id_idx ON public.order_details USING btree (user_id);
 CREATE INDEX IF NOT EXISTS order_details_restaurant_id_idx ON public.order_details USING btree (restaurant_id);
 CREATE INDEX IF NOT EXISTS order_details_order_id_idx ON public.order_details USING btree (order_id);
 

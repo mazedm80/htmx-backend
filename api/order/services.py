@@ -1,11 +1,12 @@
 from typing import List, Optional
 
-from api.order.schemas import Order, OrderDetail, OrderStatus
+from api.order.schemas import Order, OrderDetail, OrderStatus, PaymentStatus
 from core.database.services.orders import (
     get_orders,
     get_order,
     insert_order,
     update_order,
+    update_order_status,
     delete_order,
     get_order_details,
     insert_order_detail,
@@ -20,9 +21,11 @@ async def fetch_orders(restaurant_id: int, hours: Optional[int] = None) -> List[
 
 
 async def fetch_orders_by_status(
-    restaurant_id: int, status: OrderStatus
+    restaurant_id: int, status: OrderStatus, payment_status: PaymentStatus
 ) -> List[Order]:
-    orders = await get_orders_by_status(restaurant_id=restaurant_id, status=status)
+    orders = await get_orders_by_status(
+        restaurant_id=restaurant_id, status=status, payment_status=payment_status
+    )
     return orders
 
 
@@ -36,8 +39,18 @@ async def create_order(restaurant_id: int, order: Order) -> str:
     return order_id
 
 
-async def update_order(order_id: str, order: Order) -> None:
+async def modify_order(order_id: str, order: Order) -> None:
     await update_order(order_id=order_id, order=order)
+
+
+async def modify_order_status(
+    order_id: str,
+    status: Optional[OrderStatus] = None,
+    payment_status: Optional[OrderStatus] = None,
+) -> None:
+    await update_order_status(
+        order_id=order_id, status=status, payment_status=payment_status
+    )
 
 
 async def remove_order(order_id: str) -> None:

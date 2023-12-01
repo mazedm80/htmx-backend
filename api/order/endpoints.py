@@ -2,12 +2,13 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends
 
-from api.order.schemas import Order, OrderDetail, OrderStatus
+from api.order.schemas import Order, OrderDetail, OrderStatus, PaymentStatus
 from api.order.services import (
     fetch_orders,
     fetch_order,
     create_order,
-    update_order,
+    modify_order,
+    modify_order_status,
     remove_order,
     fetch_order_details,
     create_order_detail,
@@ -50,7 +51,8 @@ async def get_orders(
 @router.get("/by_status")
 async def get_orders_by_status(
     restaurant_id: int,
-    status: OrderStatus,
+    status: Optional[OrderStatus] = None,
+    payment_status: Optional[PaymentStatus] = None,
     authorize: TokenData = Depends(
         PermissionChecker(
             Permission(
@@ -66,7 +68,7 @@ async def get_orders_by_status(
 ) -> List[Order]:
     if authorize.user_id:
         orders = await fetch_orders_by_status(
-            restaurant_id=restaurant_id, status=status
+            restaurant_id=restaurant_id, status=status, payment_status=payment_status
         )
         return orders
     raise UnauthorizedException
@@ -136,7 +138,7 @@ async def put_order(
     ),
 ) -> None:
     if authorize.user_id:
-        await update_order(order_id=order_id, order=order)
+        await modify_order(order_id=order_id, order=order)
         if order_details is not None:
             await remove_order_details(order_id=order_id)
             try:
@@ -146,6 +148,33 @@ async def put_order(
                     )
             except Exception as e:
                 print(e)
+        return None
+    raise UnauthorizedException
+
+
+# update order status or payment status
+@router.put("/status")
+async def put_order_status(
+    order_id: str,
+    status: Optional[OrderStatus] = None,
+    payment_status: Optional[OrderStatus] = None,
+    authorize: TokenData = Depends(
+        PermissionChecker(
+            Permission(
+                groups=[
+                    AuthGroup.SUPER_ADMIN,
+                    AuthGroup.ADMIN,
+                    AuthGroup.OWNER,
+                    AuthGroup.MANAGER,
+                ]
+            )
+        )
+    ),
+) -> None:
+    if authorize.user_id:
+        await modify_order_status(
+            order_id=order_id, status=status, payment_status=payment_status
+        )
         return None
     raise UnauthorizedException
 

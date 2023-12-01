@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy import delete, select, update, func
 from sqlalchemy.dialects.postgresql import insert
 
-from api.order.schemas import Order, OrderDetail, OrderStatus
+from api.order.schemas import Order, OrderDetail, OrderStatus, PaymentStatus
 from core.base.error import DatabaseInsertException, DatabaseQueryException
 from core.database.orm.menus import MenuItemTB
 from core.database.orm.orders import OrderTB, OrderDetailTB
@@ -45,7 +45,6 @@ async def get_orders(restaurant_id: int, hours: Optional[int] = None) -> List[Or
         orders_list.append(
             Order(
                 order_id=order.order_id,
-                user_id=order.user_id,
                 restaurant_id=order.restaurant_id,
                 table_number=order.table_number,
                 status=order.status,
@@ -59,19 +58,35 @@ async def get_orders(restaurant_id: int, hours: Optional[int] = None) -> List[Or
     return orders_list
 
 
-async def get_orders_by_status(restaurant_id: int, status: OrderStatus) -> List[Order]:
-    statement = select(OrderTB).where(
-        OrderTB.restaurant_id == restaurant_id,
-        OrderTB.status == status,
-        OrderTB.created_at
-        >= func.now()
-        - func.make_interval(
-            0, 0, 0, 20, 24
-        ),  # years, months, weeks, days, hours (20 days)
-    )
+async def get_orders_by_status(
+    restaurant_id: int, status: OrderStatus, payment_status: PaymentStatus
+) -> List[Order]:
+    if status:
+        statement = select(OrderTB).where(
+            OrderTB.restaurant_id == restaurant_id,
+            OrderTB.status == status,
+            OrderTB.created_at
+            >= func.now()
+            - func.make_interval(
+                0, 0, 0, 20, 24
+            ),  # years, months, weeks, days, hours (20 days)
+        )
+    elif payment_status:
+        statement = select(OrderTB).where(
+            OrderTB.restaurant_id == restaurant_id,
+            OrderTB.payment_status == payment_status,
+            OrderTB.created_at
+            >= func.now()
+            - func.make_interval(
+                0, 0, 0, 20, 24
+            ),  # years, months, weeks, days, hours (20 days)
+        )
+    else:
+        raise DatabaseQueryException
     try:
         query = await PSQLHandler().execute(statement=statement)
-    except Exception:
+    except Exception as e:
+        print(e)
         raise DatabaseQueryException
     orders = query.scalars().all()
     orders_list = []
@@ -79,7 +94,6 @@ async def get_orders_by_status(restaurant_id: int, status: OrderStatus) -> List[
         orders_list.append(
             Order(
                 order_id=order.order_id,
-                user_id=order.user_id,
                 restaurant_id=order.restaurant_id,
                 table_number=order.table_number,
                 status=order.status,
@@ -102,7 +116,6 @@ async def get_order(order_id: str) -> Order:
     order = query.scalars().first()
     return Order(
         order_id=order.order_id,
-        user_id=order.user_id,
         restaurant_id=order.restaurant_id,
         table_number=order.table_number,
         status=order.status,
@@ -117,7 +130,6 @@ async def get_order(order_id: str) -> Order:
 async def insert_order(restaurant_id: int, order: Order) -> str:
     statement = insert(OrderTB).values(
         order_id=order.order_id,
-        user_id=order.user_id,
         restaurant_id=restaurant_id,
         table_number=order.table_number,
         status=order.status,
@@ -128,8 +140,7 @@ async def insert_order(restaurant_id: int, order: Order) -> str:
     )
     try:
         response = await PSQLHandler().execute_commit(statement=statement)
-    except Exception as e:
-        print(e)
+    except Exception:
         raise DatabaseInsertException
     if response is None:
         raise DatabaseInsertException
@@ -149,6 +160,22 @@ async def update_order(order: Order) -> None:
             updated_at=func.now(),
         )
     )
+    try:
+        await PSQLHandler().execute_commit(statement=statement)
+    except Exception:
+        raise DatabaseInsertException
+
+
+async def update_order_status(
+    order_id: str,
+    status: Optional[OrderStatus] = None,
+    payment_status: Optional[OrderStatus] = None,
+) -> None:
+    statement = update(OrderTB).where(OrderTB.order_id == order_id)
+    if status is not None:
+        statement = statement.values(status=status)
+    if payment_status is not None:
+        statement = statement.values(payment_status=payment_status)
     try:
         await PSQLHandler().execute_commit(statement=statement)
     except Exception:

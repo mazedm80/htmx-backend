@@ -9,8 +9,8 @@ from pydantic import BaseModel, Field, field_validator
 class OrderStatus(str, Enum):
     pending = "pending"
     accepted = "accepted"
-    rejected = "rejected"
-    cancelled = "cancelled"
+    prepared = "prepared"
+    completed = "completed"
 
 
 class OrderType(str, Enum):
@@ -27,7 +27,7 @@ class PaymentStatus(str, Enum):
 
 class Order(BaseModel):
     order_id: str = Field(description="Order ID")
-    user_id: Optional[int] = Field(default=None, description="User ID")
+    restaurant_id: int = Field(default=None, description="Restaurant ID")
     table_number: Optional[int] = Field(default=None, description="Table Number")
     status: OrderStatus = Field(description="Order Status")
     order_type: OrderType = Field(description="Order Type")

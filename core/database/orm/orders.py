@@ -17,9 +17,6 @@ class OrderTB(Base):
     __tablename__ = "order_details"
 
     order_id = Column(TEXT, primary_key=True, index=True)
-    user_id = Column(
-        INTEGER, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
     restaurant_id = Column(
         INTEGER, ForeignKey("restaurants.id", ondelete="CASCADE"), nullable=False
     )
@@ -28,8 +25,8 @@ class OrderTB(Base):
         Enum(
             "pending",
             "accepted",
-            "rejected",
-            "cancelled",
+            "prepared",
+            "completed",
             name="order_status",
             create_type=False,
         ),
