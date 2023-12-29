@@ -86,10 +86,11 @@ async def put_restaurant(
     ),
 ) -> None:
     if authorize.user_id:
-        restaurant = await modify_restaurant(
+        await modify_restaurant(
             restaurant=restaurant,
             user_id=authorize.user_id,
         )
+        return None
     raise UnauthorizedException
 
 
@@ -111,6 +112,7 @@ async def delete_restaurant(
 ) -> None:
     if authorize.user_id:
         await remove_restaurant(restaurant_id=restaurant_id, user_id=authorize.user_id)
+        return None
     raise UnauthorizedException
 
 

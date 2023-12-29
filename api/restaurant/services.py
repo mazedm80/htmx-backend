@@ -25,8 +25,7 @@ async def create_restaurant(restaurant: Restaurant, user_id: int) -> None:
 
 
 async def modify_restaurant(restaurant: Restaurant, user_id: int) -> None:
-    restaurant = await update_restaurant(restaurant=restaurant, user_id=user_id)
-    return restaurant
+    await update_restaurant(restaurant=restaurant, user_id=user_id)
 
 
 async def remove_restaurant(restaurant_id: int, user_id: int) -> None:
